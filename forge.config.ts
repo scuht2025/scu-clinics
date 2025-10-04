@@ -9,7 +9,6 @@ import { PublisherGithub } from '@electron-forge/publisher-github';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    prune: true,
     // App icon configuration
     // Use .ico for Windows to ensure the installed app uses the correct icon
     icon: 'assets/logo.ico',
@@ -22,6 +21,13 @@ const config: ForgeConfig = {
       'assets/logo.ico',
       // Include app-update.yml for electron-updater
       'app-update.yml',
+    ],
+    // Ensure native modules are properly handled
+    ignore: [
+      /^\/node_modules\/.*\/test/,
+      /^\/node_modules\/.*\/tests/,
+      /^\/node_modules\/.*\/spec/,
+      /^\/node_modules\/.*\/specs/,
     ],
   },
   rebuildConfig: {

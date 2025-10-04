@@ -1,0 +1,7 @@
+# Development auto-update configuration for testing
+# This file should be placed in the project root for local testing
+
+owner: scuht2025
+repo: scu-clinics
+provider: github
+updaterCacheDirName: scu-clinics-updater

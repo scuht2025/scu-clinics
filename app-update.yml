@@ -1,0 +1,7 @@
+# Auto-update configuration for production builds
+# This file is bundled with the app and tells electron-updater where to check for updates
+
+owner: scuht2025
+repo: scu-clinics
+provider: github
+updaterCacheDirName: scu-clinics-updater

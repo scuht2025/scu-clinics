@@ -1,0 +1,126 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on version tags like v1.2.0
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    permissions:
+      contents: write  # Required to create releases
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run make
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        shell: bash
+      
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+      
+      - name: List build output for debugging
+        run: |
+          echo "Listing out/make/squirrel.windows/x64/ contents:"
+          dir out\make\squirrel.windows\x64\
+        shell: cmd
+      
+      - name: Find and rename nupkg file
+        run: |
+          cd out\make\squirrel.windows\x64
+          for %%f in (*-full.nupkg) do (
+            echo Found nupkg: %%f
+            copy "%%f" "scu-clinics-${{ steps.get_version.outputs.VERSION }}-full.nupkg"
+          )
+          for %%f in (*Setup.exe) do (
+            echo Found setup: %%f
+            copy "%%f" "scu-clinics-${{ steps.get_version.outputs.VERSION }}-Setup.exe"
+          )
+        shell: cmd
+      
+      - name: Generate latest.yml for electron-updater
+        run: |
+          cd out\make\squirrel.windows\x64
+          $version = "${{ steps.get_version.outputs.VERSION }}"
+          $nupkgFile = "scu-clinics-$version-full.nupkg"
+          $hash = (Get-FileHash -Path $nupkgFile -Algorithm SHA512).Hash.ToLower()
+          $date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+          
+          $yaml = @"
+          version: $version
+          path: $nupkgFile
+          sha512: $hash
+          releaseDate: $date
+          "@
+          
+          $yaml | Out-File -FilePath "latest.yml" -Encoding UTF8 -NoNewline
+          Write-Host "Generated latest.yml:"
+          Get-Content latest.yml
+        shell: pwsh
+      
+      - name: Upload Windows Installer to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: out/make/squirrel.windows/x64/scu-clinics-${{ steps.get_version.outputs.VERSION }}-Setup.exe
+          asset_name: scu-clinics-Setup-${{ steps.get_version.outputs.VERSION }}.exe
+          asset_content_type: application/octet-stream
+      
+      - name: Upload RELEASES file
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: out/make/squirrel.windows/x64/RELEASES
+          asset_name: RELEASES
+          asset_content_type: text/plain
+      
+      - name: Upload nupkg file
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: out/make/squirrel.windows/x64/scu-clinics-${{ steps.get_version.outputs.VERSION }}-full.nupkg
+          asset_name: scu-clinics-${{ steps.get_version.outputs.VERSION }}-full.nupkg
+          asset_content_type: application/octet-stream
+      
+      - name: Upload latest.yml
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: out/make/squirrel.windows/x64/latest.yml
+          asset_name: latest.yml
+          asset_content_type: text/yaml

@@ -1,7 +1,7 @@
 {
   "name": "scu-clinics",
   "productName": "scu-clinics",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Clinics Manger",
   "main": ".vite/build/main.js",
   "scripts": {
@@ -14,9 +14,9 @@
     "package:linux": "electron-forge make --platform=linux",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "release:patch": "node scripts/release.js patch && git push origin main --tags",
-    "release:minor": "node scripts/release.js minor && git push origin main --tags",
-    "release:major": "node scripts/release.js major && git push origin main --tags",
+    "release:patch": "node scripts/release.js patch",
+    "release:minor": "node scripts/release.js minor",
+    "release:major": "node scripts/release.js major",
     "build:ico": "node scripts/build-ico.js",
     "premake": "npm run build:ico",
     "prepackage:win": "npm run build:ico",

@@ -2,7 +2,7 @@
   "name": "scu-clinics",
   "productName": "scu-clinics",
   "version": "1.4.0",
-  "description": "My Electron application description",
+  "description": "Clinics Manger",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",

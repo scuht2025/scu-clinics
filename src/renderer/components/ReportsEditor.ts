@@ -417,8 +417,8 @@ export class ReportsEditor {
     container.className = 'report-print-container print-only';
     container.innerHTML = `
       <div class="prescription-header">
-        <div class="clinic-title">تقرير طبي</div>
-        <div class="clinic-subtitle">Clinic Report</div>
+        <div class="clinic-title" id="hospitalNameHeader">&nbsp;</div>
+        <div class="clinic-subtitle">تقرير طبي</div>
       </div>
       <div class="page">
         <div class="patient-info">
@@ -447,6 +447,7 @@ export class ReportsEditor {
     document.body.appendChild(container);
 
     try {
+      await PrintManager.getInstance().applyHospitalHeader(container);
       await PrintManager.getInstance().orchestratePrint();
     } finally {
       // Clean up the print container and class after printing

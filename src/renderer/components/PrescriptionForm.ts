@@ -47,6 +47,8 @@ export class PrescriptionForm {
     await this.medicationTable.initialize();
     await this.populateFormIfEditing();
     this.preferences.restoreSelections();
+    // Apply hospital header text dynamically
+    void this.printManager.applyHospitalHeader();
     
     // Ensure focus is set on the first input after initialization
     setTimeout(() => {
@@ -231,6 +233,8 @@ export class PrescriptionForm {
 
   private async printPrescription(): Promise<void> {
     try {
+      // Ensure header is applied
+      await this.printManager.applyHospitalHeader();
       await this.printManager.printFromForm();
     } catch (error) {
       console.error('Error printing prescription:', error);

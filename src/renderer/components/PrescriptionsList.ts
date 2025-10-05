@@ -180,6 +180,9 @@ export class PrescriptionsList {
 
     mainContent.innerHTML = PrescriptionViewTemplate.generateViewTemplate(prescriptionData);
     this.setupPrescriptionViewEventListeners(prescription);
+
+    // Apply hospital header to the view header
+    void this.printManager.applyHospitalHeader();
   }
 
   private setupPrescriptionViewEventListeners(prescription: any): void {
@@ -198,6 +201,8 @@ export class PrescriptionsList {
 
   private async printPrescription(): Promise<void> {
     try {
+      // Ensure header is applied
+      await this.printManager.applyHospitalHeader();
       await this.printManager.printFromView();
     } catch (error) {
       console.error('Error printing prescription:', error);

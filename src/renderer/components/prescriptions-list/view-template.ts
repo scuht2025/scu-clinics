@@ -24,7 +24,7 @@ export class PrescriptionViewTemplate {
 
     return `
       <div class="prescription-header">
-        <div class="clinic-title">مستشفى جامعة قناة السويس التخصصي</div>
+        <div class="clinic-title" id="hospitalNameHeader">&nbsp;</div>
         <div class="clinic-subtitle">عرض الروشتة</div>
       </div>
 

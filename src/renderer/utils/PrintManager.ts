@@ -31,6 +31,8 @@ export class PrintManager {
    */
   public preparePrintView(prescriptionData: any): void {
     try {
+      // Hospital name header
+      this.applyHospitalHeader();
       // Parse medications and pharmacies
       const medications = JSON.parse(prescriptionData.medications || '[]');
       const pharmacies = JSON.parse(prescriptionData.pharmacies || '[]');
@@ -354,6 +356,9 @@ export class PrintManager {
     container.innerHTML = renderOldPrintHTML(payload);
     document.body.appendChild(container);
 
+    // Set hospital header in old template
+    this.applyHospitalHeader(container);
+
     // Toggle a class to control visibility in CSS
     document.body.classList.add('printing-old');
 
@@ -364,5 +369,24 @@ export class PrintManager {
       if (node && node.parentElement) node.parentElement.removeChild(node);
     };
     window.addEventListener('afterprint', cleanup);
+  }
+
+  public async applyHospitalHeader(root?: HTMLElement | Document): Promise<void> {
+    try {
+      const cfg = await apiService.getHospitalConfig();
+      const name = cfg?.name || '';
+      const address = cfg?.address || '';
+      const phone = cfg?.phone || '';
+      const text = [name, address && `- ${address}`, phone && `- ${phone}`].filter(Boolean).join(' ');
+      const scope: Document | HTMLElement = root || document;
+      const headerEl = (scope as any).getElementById ? (scope as Document).getElementById('hospitalNameHeader') : null;
+      const searchRoot: Document | HTMLElement = (scope && !(scope as Document).querySelectorAll)
+        ? document
+        : (scope as Document | HTMLElement);
+      const els = headerEl ? [headerEl] : Array.from((searchRoot as any).querySelectorAll('#hospitalNameHeader'));
+      els.forEach((el: any) => { el.textContent = text || name || ''; });
+    } catch (e) {
+      // ignore
+    }
   }
 }

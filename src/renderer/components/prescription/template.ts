@@ -23,7 +23,7 @@ const buildPharmacies = (items: Array<{ name: string }>) =>
 
 export const buildPrescriptionFormTemplate = ({ doctors, clinics, pharmacies }: TemplateData) => `
   <div class="prescription-header">
-    <div class="clinic-title">مستشفى جامعة قناة السويس التخصصي</div>
+    <div class="clinic-title" id="hospitalNameHeader">&nbsp;</div>
     <div class="clinic-subtitle">الروشتة الإلكترونية</div>
   </div>
 

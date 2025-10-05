@@ -132,6 +132,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getDatabaseInfo: () =>
     ipcRenderer.invoke('get-database-info'),
 
+  // Hospital configuration
+  getHospitalConfig: () =>
+    ipcRenderer.invoke('get-hospital-config'),
+  saveHospitalConfig: (data: { name?: string; address?: string; phone?: string }) =>
+    ipcRenderer.invoke('save-hospital-config', data),
+
   // Focus management
   onWindowFocus: (callback: () => void) =>
     ipcRenderer.on('window-focused', callback),
@@ -227,6 +233,10 @@ export interface ElectronAPI {
   resetDatabasePath: () => Promise<void>;
   createDatabaseBackup: () => Promise<string>;
   getDatabaseInfo: () => Promise<any>;
+
+  // Hospital configuration
+  getHospitalConfig: () => Promise<{ id?: number; name?: string; address?: string; phone?: string }>;
+  saveHospitalConfig: (data: { name?: string; address?: string; phone?: string }) => Promise<any>;
 
   // Focus management
   onWindowFocus: (callback: () => void) => void;

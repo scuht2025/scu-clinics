@@ -103,6 +103,13 @@ export interface Appointment {
   notes?: string;
 }
 
+export interface HospitalConfig {
+  id?: number; // always 1
+  name: string;
+  address?: string;
+  phone?: string;
+}
+
 export function initializeDatabase(): Database.Database {
   // Create the clinics-db folder on C drive if it doesn't exist
   const dbDir = 'C:\\clinics-db';
@@ -260,6 +267,16 @@ function createTables() {
       reportTime TEXT NOT NULL,
       content TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Hospital configuration (single row with id=1)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS hospital_config (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      name TEXT,
+      address TEXT,
+      phone TEXT
     )
   `);
 
@@ -692,6 +709,30 @@ export const procedureCodesService = {
 };
 
 export const reportsService = createCRUDService<Report>('reports', 'reportDate');
+
+// Hospital configuration service (single row)
+export const hospitalConfigService = {
+  get: (): HospitalConfig => {
+    const stmt = db.prepare('SELECT id, name, address, phone FROM hospital_config WHERE id = 1');
+    const row = stmt.get() as HospitalConfig | undefined;
+    // Provide sensible defaults if not configured
+    return row ?? { id: 1, name: 'مستشفى جامعة قناة السويس التخصصي', address: '', phone: '' };
+  },
+  save: (data: Partial<HospitalConfig>) => {
+    const existing = db.prepare('SELECT id FROM hospital_config WHERE id = 1').get() as { id: number } | undefined;
+    if (existing) {
+      const fields = Object.keys(data).filter(k => k !== 'id');
+      if (fields.length === 0) return { changes: 0 };
+      const setClause = fields.map(f => `${f} = ?`).join(', ');
+      const values = fields.map(f => (data as any)[f]);
+      const stmt = db.prepare(`UPDATE hospital_config SET ${setClause} WHERE id = 1`);
+      return stmt.run(...values);
+    } else {
+      const stmt = db.prepare('INSERT INTO hospital_config (id, name, address, phone) VALUES (1, ?, ?, ?)');
+      return stmt.run(data.name ?? null, data.address ?? null, data.phone ?? null);
+    }
+  }
+};
 
 function removeLegacyColumns() {
   const columnsToDrop: Record<string, string[]> = {

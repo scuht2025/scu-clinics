@@ -32,6 +32,7 @@ export class AdminInterface {
 
         <div class="admin-tabs">
           <button class="admin-tab active" data-section="database">إعدادات قاعدة البيانات</button>
+          <button class="admin-tab" data-section="hospital-config">بيانات المستشفى</button>
           <button class="admin-tab" data-section="doctors">الأطباء</button>
           <button class="admin-tab" data-section="clinics">العيادات</button>
           <button class="admin-tab" data-section="medication-levels">مستويات الوصف</button>
@@ -89,6 +90,9 @@ export class AdminInterface {
       if (section === 'database') {
         adminContent.innerHTML = await this.createDatabaseSettingsContent();
         this.setupDatabaseEventListeners();
+      } else if (section === 'hospital-config') {
+        adminContent.innerHTML = await this.createHospitalConfigContent();
+        this.setupHospitalConfigListeners();
       } else {
         await this.loadAdminSection(section);
       }
@@ -96,6 +100,61 @@ export class AdminInterface {
       console.error(`Error loading admin section ${section}:`, error);
       adminContent.innerHTML = '<p>خطأ في تحميل البيانات</p>';
     }
+  }
+
+  private async createHospitalConfigContent(): Promise<string> {
+    const cfg = await apiService.getHospitalConfig().catch(() => ({} as any));
+    const name = (cfg?.name ?? '').toString();
+    const address = (cfg?.address ?? '').toString();
+    const phone = (cfg?.phone ?? '').toString();
+
+    return `
+      <div class="admin-section">
+        <div class="section-header">
+          <h3>بيانات المستشفى</h3>
+          <p>سيتم استخدام هذه البيانات في رأس الطباعة والتقارير</p>
+        </div>
+
+        <div class="form-group">
+          <label>اسم المستشفى *</label>
+          <input type="text" id="hospitalName" placeholder="اسم المستشفى" value="${name}">
+        </div>
+        <div class="form-group">
+          <label>العنوان</label>
+          <input type="text" id="hospitalAddress" placeholder="العنوان" value="${address}">
+        </div>
+        <div class="form-group">
+          <label>رقم الهاتف</label>
+          <input type="text" id="hospitalPhone" placeholder="رقم الهاتف" value="${phone}">
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" id="saveHospitalConfigBtn">حفظ</button>
+        </div>
+      </div>
+    `;
+  }
+
+  private setupHospitalConfigListeners(): void {
+    const saveBtn = document.getElementById('saveHospitalConfigBtn');
+    saveBtn?.addEventListener('click', async () => {
+      const name = (document.getElementById('hospitalName') as HTMLInputElement)?.value?.trim() || '';
+      const address = (document.getElementById('hospitalAddress') as HTMLInputElement)?.value?.trim() || '';
+      const phone = (document.getElementById('hospitalPhone') as HTMLInputElement)?.value?.trim() || '';
+
+      if (!name) {
+        void Dialog.alert('يرجى إدخال اسم المستشفى');
+        return;
+      }
+
+      try {
+        await apiService.saveHospitalConfig({ name, address, phone });
+        await Dialog.alert('تم حفظ بيانات المستشفى');
+      } catch (error) {
+        console.error('Error saving hospital config:', error);
+        void Dialog.alert('خطأ في الحفظ');
+      }
+    });
   }
 
   private async createDatabaseSettingsContent(): Promise<string> {

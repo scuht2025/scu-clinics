@@ -158,7 +158,7 @@ export function renderOldPrintHTML(data: OldPrintPrescriptionData): string {
     <!-- Header Table -->
     <table class="header-table" width="100%">
       <tr>
-        <td colspan="2" style="text-align:right; border:none;">مستشفى جامعة قناة السويس التخصصي</td>
+        <td colspan="2" style="text-align:right; border:none;" id="hospitalNameHeader">&nbsp;</td>
         <td colspan="2" class="title" style="border:none;">الروشتة الإلكترونية</td>
       </tr>
       <tr>

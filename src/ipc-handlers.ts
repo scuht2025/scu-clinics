@@ -21,7 +21,8 @@ import {
   medicationsService,
   pharmaciesService,
   procedureCodesService,
-  reportsService
+  reportsService,
+  hospitalConfigService
 } from './database';
 import { logger } from './utils/logger';
 import { Validator } from './utils/validation';
@@ -627,6 +628,29 @@ export function setupIpcHandlers(): void {
       };
     } catch (error) {
       logger.error('Error getting database info:', error);
+      throw error;
+    }
+  });
+
+  // Hospital configuration handlers
+  ipcMain.handle('get-hospital-config', async () => {
+    try {
+      return hospitalConfigService.get();
+    } catch (error) {
+      logger.error('Error getting hospital config:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('save-hospital-config', async (_event, data) => {
+    try {
+      return hospitalConfigService.save({
+        name: Validator.sanitizeString(data?.name || ''),
+        address: Validator.sanitizeString(data?.address || ''),
+        phone: Validator.sanitizeString(data?.phone || '')
+      });
+    } catch (error) {
+      logger.error('Error saving hospital config:', error);
       throw error;
     }
   });

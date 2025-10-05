@@ -1384,6 +1384,9 @@ button:focus,
   background: #e5e7eb;
   transform: translateY(1px);
 }
+#redoBtn {
+  margin-left: 20px;
+}
 
 /* Quill base styles (minimal Snow-like) */
 .ql-toolbar {

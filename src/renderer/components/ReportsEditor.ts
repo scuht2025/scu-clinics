@@ -195,8 +195,8 @@ export class ReportsEditor {
             `;
           },
           onSelect: (item: any, insertItem: (it: any) => void) => {
-            // Insert non-denoted UHIA code as mention badge
-            insertItem({ id: item.id, value: item.value, ar: item.ar, en: item.en });
+            const display = item.ar ? `${item.value} - ${item.ar}` : item.value;
+            insertItem({ id: item.id, value: display, ar: item.ar, en: item.en });
           }
         }
       }

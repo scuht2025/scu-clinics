@@ -169,11 +169,11 @@ export class ApiService {
   }
 
   // Hospital configuration
-  async getHospitalConfig(): Promise<{ id?: number; name?: string; address?: string; phone?: string }> {
+  async getHospitalConfig(): Promise<{ id?: number; name?: string; address?: string; phone?: string; logo?: string | null }> {
     return this.getCachedData('hospital-config', () => this.callApi('getHospitalConfig'));
   }
 
-  async saveHospitalConfig(data: { name?: string; address?: string; phone?: string }): Promise<any> {
+  async saveHospitalConfig(data: { name?: string; address?: string; phone?: string; logo?: string | null }): Promise<any> {
     // Invalidate cache before saving
     this.clearCache('hospital-config');
     return this.callApi('saveHospitalConfig', data);

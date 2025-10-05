@@ -24,6 +24,7 @@ export class PrescriptionViewTemplate {
 
     return `
       <div class="prescription-header">
+        <div id="hospitalLogoHeader" class="clinic-logo" style="text-align:center; margin-bottom:8px;"></div>
         <div class="clinic-title" id="hospitalNameHeader">&nbsp;</div>
         <div class="clinic-subtitle">عرض الروشتة</div>
       </div>

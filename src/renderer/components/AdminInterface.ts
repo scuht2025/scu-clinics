@@ -128,6 +128,16 @@ export class AdminInterface {
           <input type="text" id="hospitalPhone" placeholder="رقم الهاتف" value="${phone}">
         </div>
 
+        <div class="form-group">
+          <label>شعار المستشفى (اختياري)</label>
+          <div style="display:flex; gap: 12px; align-items: center;">
+            <input type="file" id="hospitalLogo" accept="image/*">
+            ${cfg?.logo ? `<img id="hospitalLogoPreview" src="${cfg.logo}" alt="Logo preview" style="height:48px; border:1px solid #ddd; padding:2px; border-radius:4px;"/>` : '<img id="hospitalLogoPreview" style="display:none; height:48px;" />'}
+            <button class="btn" id="removeHospitalLogoBtn" ${cfg?.logo ? '' : 'style="display:none;"'}>إزالة الشعار</button>
+          </div>
+          <p class="help-text">سيتم حفظ الشعار داخل قاعدة البيانات واستخدامه في رأس الطباعة.</p>
+        </div>
+
         <div class="form-actions">
           <button class="btn btn-primary" id="saveHospitalConfigBtn">حفظ</button>
         </div>
@@ -141,6 +151,8 @@ export class AdminInterface {
       const name = (document.getElementById('hospitalName') as HTMLInputElement)?.value?.trim() || '';
       const address = (document.getElementById('hospitalAddress') as HTMLInputElement)?.value?.trim() || '';
       const phone = (document.getElementById('hospitalPhone') as HTMLInputElement)?.value?.trim() || '';
+      const logoPreview = document.getElementById('hospitalLogoPreview') as HTMLImageElement | null;
+      const logo = logoPreview?.src && logoPreview.style.display !== 'none' ? logoPreview.src : null;
 
       if (!name) {
         void Dialog.alert('يرجى إدخال اسم المستشفى');
@@ -148,12 +160,98 @@ export class AdminInterface {
       }
 
       try {
-        await apiService.saveHospitalConfig({ name, address, phone });
+        await apiService.saveHospitalConfig({ name, address, phone, logo });
         await Dialog.alert('تم حفظ بيانات المستشفى');
       } catch (error) {
         console.error('Error saving hospital config:', error);
         void Dialog.alert('خطأ في الحفظ');
       }
+    });
+
+    // Logo file picker handling
+    const fileInput = document.getElementById('hospitalLogo') as HTMLInputElement | null;
+    const preview = document.getElementById('hospitalLogoPreview') as HTMLImageElement | null;
+    const removeBtn = document.getElementById('removeHospitalLogoBtn') as HTMLButtonElement | null;
+
+    fileInput?.addEventListener('change', async () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+      try {
+        const dataUrl = await this.resizeImageToDataUrl(file, { maxWidth: 600, maxHeight: 200, quality: 0.8 });
+        if (preview) {
+          preview.src = dataUrl;
+          preview.style.display = 'inline-block';
+          if (removeBtn) removeBtn.style.display = '';
+        }
+      } catch (err) {
+        console.error('Logo resize/compress failed', err);
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string' && preview) {
+            preview.src = reader.result;
+            preview.style.display = 'inline-block';
+            if (removeBtn) removeBtn.style.display = '';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    removeBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+      }
+      if (fileInput) fileInput.value = '';
+      if (removeBtn) removeBtn.style.display = 'none';
+    });
+  }
+
+  private resizeImageToDataUrl(file: File, opts: { maxWidth: number; maxHeight: number; quality: number }): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Failed to read image'));
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const { maxWidth, maxHeight, quality } = opts;
+            let { width, height } = img;
+
+            // Compute target size keeping aspect ratio
+            const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+            const targetW = Math.round(width * ratio);
+            const targetH = Math.round(height * ratio);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = targetW;
+            canvas.height = targetH;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return reject(new Error('No 2D context'));
+            ctx.clearRect(0, 0, targetW, targetH);
+            ctx.drawImage(img, 0, 0, targetW, targetH);
+
+            // Prefer PNG if original has alpha; otherwise JPEG
+            const isPng = (file.type || '').toLowerCase().includes('png');
+            const mime = isPng ? 'image/png' : 'image/jpeg';
+            const q = isPng ? 0.92 : Math.min(Math.max(quality, 0.5), 0.9);
+
+            canvas.toBlob((blob) => {
+              if (!blob) return reject(new Error('Canvas export failed'));
+              const fr = new FileReader();
+              fr.onload = () => resolve(String(fr.result || ''));
+              fr.onerror = () => reject(new Error('Failed to read compressed blob'));
+              fr.readAsDataURL(blob);
+            }, mime, q);
+          } catch (e) {
+            reject(e);
+          }
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = String(reader.result || '');
+      };
+      reader.readAsDataURL(file);
     });
   }
 

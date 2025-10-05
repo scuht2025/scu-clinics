@@ -377,6 +377,7 @@ export class PrintManager {
       const name = cfg?.name || '';
       const address = cfg?.address || '';
       const phone = cfg?.phone || '';
+      const logo = cfg?.logo || null;
       const text = [name, address && `- ${address}`, phone && `- ${phone}`].filter(Boolean).join(' ');
       const scope: Document | HTMLElement = root || document;
       const headerEl = (scope as any).getElementById ? (scope as Document).getElementById('hospitalNameHeader') : null;
@@ -385,6 +386,18 @@ export class PrintManager {
         : (scope as Document | HTMLElement);
       const els = headerEl ? [headerEl] : Array.from((searchRoot as any).querySelectorAll('#hospitalNameHeader'));
       els.forEach((el: any) => { el.textContent = text || name || ''; });
+
+      // Inject logo where supported: target any elements with id=hospitalLogoHeader if present
+      const logoTargets = Array.from((searchRoot as any).querySelectorAll('#hospitalLogoHeader')) as HTMLElement[];
+      if (logoTargets.length) {
+        logoTargets.forEach(target => {
+          if (logo) {
+            target.innerHTML = `<img src="${logo}" alt="Hospital Logo" style="height:48px; object-fit:contain;" />`;
+          } else {
+            target.innerHTML = '';
+          }
+        });
+      }
     } catch (e) {
       // ignore
     }

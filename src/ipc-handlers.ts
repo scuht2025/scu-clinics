@@ -647,7 +647,8 @@ export function setupIpcHandlers(): void {
       return hospitalConfigService.save({
         name: Validator.sanitizeString(data?.name || ''),
         address: Validator.sanitizeString(data?.address || ''),
-        phone: Validator.sanitizeString(data?.phone || '')
+        phone: Validator.sanitizeString(data?.phone || ''),
+        logo: typeof data?.logo === 'string' && data.logo.startsWith('data:image/') ? data.logo : null
       });
     } catch (error) {
       logger.error('Error saving hospital config:', error);

@@ -195,7 +195,8 @@ export class ReportsEditor {
             `;
           },
           onSelect: (item: any, insertItem: (it: any) => void) => {
-            const display = item.ar ? `${item.value} - ${item.ar}` : item.value;
+            // Insert as: AR_NAME UHIA_CODE (space-separated)
+            const display = item.ar ? `${item.ar} - ${item.value}` : item.value;
             insertItem({ id: item.id, value: display, ar: item.ar, en: item.en });
           }
         }

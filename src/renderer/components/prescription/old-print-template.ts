@@ -223,6 +223,7 @@ export function renderOldPrintHTML(data: OldPrintPrescriptionData): string {
     <table width="100%" style="margin-top: 4px;">
       <tr>
         <td class="signature">ختم الطبيب</td>
+        <td style="width:100px; border-bottom: none"></td>
         <td class="signature">ختم المنشأة</td>
       </tr>
     </table>

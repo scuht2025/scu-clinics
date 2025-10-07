@@ -680,7 +680,8 @@ export function setupIpcHandlers(): void {
   ipcMain.handle('quit-and-install', async () => {
     try {
       logger.info('Quit and install triggered');
-      autoUpdater.quitAndInstall();
+      // Ensure installer is applied immediately and app restarts automatically
+      autoUpdater.quitAndInstall(true, true);
     } catch (error) {
       logger.error('Error quitting and installing:', error);
       throw error;

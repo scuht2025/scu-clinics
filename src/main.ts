@@ -445,8 +445,10 @@ function setupAutoUpdater() {
   // });
 
   // Configure auto-updater behavior
-  autoUpdater.autoDownload = true; // Don't auto-download, ask user first
-  autoUpdater.autoInstallOnAppQuit = true; // Auto-install when app quits
+  // Don't auto-download; let the renderer explicitly trigger download to avoid double flows
+  autoUpdater.autoDownload = false;
+  // Install on quit after a successful download (also handled by explicit quitAndInstall)
+  autoUpdater.autoInstallOnAppQuit = true;
 
   // Check for updates when app is ready
   autoUpdater.on('checking-for-update', () => {
@@ -491,6 +493,11 @@ function setupAutoUpdater() {
     if (mainWindow) {
       mainWindow.webContents.send('update-downloaded', info);
     }
+  });
+
+  // Log lifecycle when quitting for update (Windows Squirrel)
+  app.on('before-quit-for-update', () => {
+    log.info('App is quitting to install update (before-quit-for-update)');
   });
 
   // Check for updates on startup (after 3 seconds delay)

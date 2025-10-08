@@ -21,6 +21,9 @@ export class PrescriptionService {
         ...data,
         patientName: Validator.sanitizeString(data.patientName),
         patientId: Validator.sanitizeString(data.patientId),
+        age: Validator.sanitizeString(data.age),
+        socialNumber: Validator.sanitizeString(data.socialNumber),
+        gender: Validator.sanitizeString(data.gender),
         diagnoses: Validator.sanitizeString(data.diagnoses),
         doctorName: Validator.sanitizeString(data.doctorName),
         doctorDegree: Validator.sanitizeString(data.doctorDegree),
@@ -75,6 +78,9 @@ export class PrescriptionService {
       const sanitizedData = { ...data };
       if (data.patientName) sanitizedData.patientName = Validator.sanitizeString(data.patientName);
       if (data.patientId) sanitizedData.patientId = Validator.sanitizeString(data.patientId);
+      if (data.age) sanitizedData.age = Validator.sanitizeString(data.age);
+      if (data.socialNumber) sanitizedData.socialNumber = Validator.sanitizeString(data.socialNumber);
+      if (data.gender) sanitizedData.gender = Validator.sanitizeString(data.gender);
       if (data.diagnoses) sanitizedData.diagnoses = Validator.sanitizeString(data.diagnoses);
       if (data.doctorName) sanitizedData.doctorName = Validator.sanitizeString(data.doctorName);
       if (data.doctorDegree) sanitizedData.doctorDegree = Validator.sanitizeString(data.doctorDegree);

@@ -155,6 +155,9 @@ export class PrescriptionForm {
     return {
       patientName: (document.getElementById('patientName') as HTMLInputElement).value,
       patientId: (document.getElementById('patientId') as HTMLInputElement).value,
+      age: (document.getElementById('age') as HTMLInputElement).value,
+      socialNumber: (document.getElementById('socialNumber') as HTMLInputElement).value,
+      gender: (document.getElementById('gender') as HTMLSelectElement).value,
       diagnoses: (document.getElementById('diagnoses') as HTMLInputElement).value,
       doctorName: (document.getElementById('doctorName') as HTMLSelectElement).value,
       doctorDegree: (document.getElementById('doctorDegree') as HTMLSelectElement).value,
@@ -264,6 +267,9 @@ export class PrescriptionForm {
         // Populate basic form fields
         const patientNameInput = document.getElementById('patientName') as HTMLInputElement;
         const patientIdInput = document.getElementById('patientId') as HTMLInputElement;
+        const ageInput = document.getElementById('age') as HTMLInputElement;
+        const socialNumberInput = document.getElementById('socialNumber') as HTMLInputElement;
+        const genderSelect = document.getElementById('gender') as HTMLSelectElement;
         const diagnosesInput = document.getElementById('diagnoses') as HTMLInputElement;
         const doctorSelect = document.getElementById('doctorName') as HTMLSelectElement;
         const doctorDegreeSelect = document.getElementById('doctorDegree') as HTMLSelectElement;
@@ -273,6 +279,9 @@ export class PrescriptionForm {
 
         if (patientNameInput) patientNameInput.value = prescriptionData.patientName || '';
         if (patientIdInput) patientIdInput.value = prescriptionData.patientId || '';
+        if (ageInput) ageInput.value = prescriptionData.age || '';
+        if (socialNumberInput) socialNumberInput.value = prescriptionData.socialNumber || '';
+        if (genderSelect) genderSelect.value = prescriptionData.gender || '';
         if (diagnosesInput) diagnosesInput.value = prescriptionData.diagnoses || '';
         if (doctorSelect) doctorSelect.value = prescriptionData.doctorName || '';
         if (doctorDegreeSelect) doctorDegreeSelect.value = prescriptionData.doctorDegree || '';

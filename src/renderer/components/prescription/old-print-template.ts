@@ -133,21 +133,21 @@ export function renderOldPrintHTML(data: OldPrintPrescriptionData): string {
   return `
   <div class="old-print-root" lang="ar" dir="rtl">
     <style>
-      @page { size: A4 landscape; margin: 10px; }
-      .old-print-root { font-family: Tahoma, Arial, sans-serif; margin: 0; direction: rtl; zoom: 0.94; }
+      @page { size: A4 landscape; margin: 20px; }
+      .old-print-root { font-family: Tahoma, Arial, sans-serif; margin: 0; direction: rtl; zoom: 0.94; padding: 15px; }
       .old-print-root table { width: 100%; border-collapse: collapse; font-size: 14px; }
-      .old-print-root td, .old-print-root th { border: 1px solid #000; padding: 4px; }
+      .old-print-root td, .old-print-root th { border: 1px solid #000; padding: 6px; }
       .old-print-root .header-table td { font-weight: bold; }
-      .old-print-root .title { background: #d9eaf7; text-align: center; font-size: 19px; font-weight: 800; padding: 8px; }
+      .old-print-root .title { background: #d9eaf7; text-align: center; font-size: 20px; font-weight: 800; padding: 10px; }
       /* Make very top row (both cells) larger and bolder */
-      .old-print-root .header-table tr:first-child td { font-size: 19px; font-weight: 800; padding: 6px; }
+      .old-print-root .header-table tr:first-child td { font-size: 20px; font-weight: 800; padding: 8px; }
       .old-print-root .section-title { background: #1d70b8; color: white; font-weight: bold; text-align: center; }
-      .old-print-root .section-title th { font-size: 13px; white-space: normal; word-wrap: break-word; line-height: 1.2; }
+      .old-print-root .section-title th { font-size: 14px; white-space: normal; word-wrap: break-word; line-height: 1.2; }
       .old-print-root .med-table { table-layout: fixed; }
-      .old-print-root .no { background: red; color: white; font-weight: bold; padding: 2px 6px; display: inline-block; }
-      .old-print-root .footer-note { text-align: center; font-weight: bold; padding: 10px; }
+      .old-print-root .no { background: red; color: white; font-weight: bold; padding: 3px 8px; display: inline-block; }
+      .old-print-root .footer-note { text-align: center; font-weight: bold; padding: 12px; }
       .old-print-root .signature { font-weight: bold; text-align: center; }
-      .old-print-root .contract-table td, .old-print-root .contract-table th { border: 1px solid #000; padding: 4px; }
+      .old-print-root .contract-table td, .old-print-root .contract-table th { border: 1px solid #000; padding: 6px; }
       .old-print-root .contract-table th { background: #1d70b8; color: white; text-align: center; }
       .old-print-root .right-align { text-align: right; }
       .old-print-root .center-cell { text-align: center; vertical-align: middle; font-weight: bold; }

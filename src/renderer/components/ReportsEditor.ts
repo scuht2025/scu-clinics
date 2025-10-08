@@ -38,27 +38,81 @@ export class ReportsEditor {
 
   async render(): Promise<string> {
     const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+    
+    // Get dynamic data
+    const [doctors, clinics] = await Promise.all([
+      apiService.getDoctorsList(),
+      apiService.getClinics()
+    ]);
+
+    const buildOptions = (items: Array<{ name: string }>, emptyLabel: string) => {
+      const options = items
+        .map(item => `<option value="${item.name}">${item.name}</option>`)
+        .join('');
+      return `<option value="">${emptyLabel}</option>${options}`;
+    };
+
     return `
       <div class="reports-editor-container" dir="rtl" lang="ar">
         <div class="reports-form">
-          <div class="form-row four-cols">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="doctorName">الطبيب *</label>
+              <select id="doctorName" name="doctorName" required>
+                ${buildOptions(doctors, 'اختر الطبيب')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="doctorDegree">درجة الطبيب</label>
+              <select id="doctorDegree" name="doctorDegree">
+                <option value="">اختر الدرجة</option>
+                <option value="Consultant">استشاري</option>
+                <option value="Family Doctor"> طبيب أسرة</option>
+                <option value="Specialist">أخصائي</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="consultation">العيادة</label>
+              <select id="consultation" name="consultation">
+                ${buildOptions(clinics, 'اختر التخصص')}
+              </select>
+            </div>
+            <div class="form-group half">
+              <label for="reportDate">التاريخ *</label>
+              <input type="date" id="reportDate" name="reportDate" required value="${today}">
+            </div>
+            <div class="form-group half">
+              <label for="reportTime">الوقت *</label>
+              <input type="time" id="reportTime" name="reportTime" required value="${currentTime}">
+            </div>
+          </div>
+
+          <div class="form-row">
             <div class="form-group">
               <label for="patientName">اسم المريض *</label>
               <input type="text" id="patientName" name="patientName" required placeholder="اسم المريض">
             </div>
             <div class="form-group">
-              <label for="patientId">رقم المريض *</label>
-              <input type="text" id="patientId" name="patientId" required placeholder="رقم المريض">
+              <label for="age">السن</label>
+              <input type="number" id="age" name="age" placeholder="السن">
             </div>
             <div class="form-group">
-              <label for="doctorName">اسم الطبيب *</label>
-              <select id="doctorName" name="doctorName" required>
-                <option value="">اختر الطبيب</option>
+              <label for="gender">النوع</label>
+              <select id="gender" name="gender">
+                <option value="">اختر النوع</option>
+                <option value="ذكر">ذكر</option>
+                <option value="أنثي">أنثي</option>
               </select>
             </div>
             <div class="form-group">
-              <label for="reportDate">تاريخ التقرير *</label>
-              <input type="date" id="reportDate" name="reportDate" required value="${today}">
+              <label for="socialNumber">الرقم القومي</label>
+              <input type="number" id="socialNumber" name="socialNumber" placeholder="الرقم القومي">
+            </div>
+            <div class="form-group">
+              <label for="patientId">رقم المريض *</label>
+              <input type="text" id="patientId" name="patientId" required placeholder="رقم المريض">
             </div>
           </div>
 
@@ -118,7 +172,7 @@ export class ReportsEditor {
     this.setupEventListeners();
     this.setupEditor();
     this.setCurrentDate();
-    await this.populateDoctors();
+    this.setCurrentTime();
     await this.hydrateFromStateOrDraft();
   }
 
@@ -289,6 +343,15 @@ export class ReportsEditor {
     }
   }
 
+  private setCurrentTime(): void {
+    const timeInput = document.getElementById('reportTime') as HTMLInputElement;
+    if (timeInput) {
+      const now = new Date();
+      const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+      timeInput.value = currentTime;
+    }
+  }
+
   private async saveReport(): Promise<void> {
     const formData = this.getFormData();
     
@@ -326,14 +389,26 @@ export class ReportsEditor {
   private getFormData(): any {
     const patientName = (document.getElementById('patientName') as HTMLInputElement)?.value || '';
     const patientId = (document.getElementById('patientId') as HTMLInputElement)?.value || '';
+    const age = (document.getElementById('age') as HTMLInputElement)?.value || '';
+    const socialNumber = (document.getElementById('socialNumber') as HTMLInputElement)?.value || '';
+    const gender = (document.getElementById('gender') as HTMLSelectElement)?.value || '';
     const doctorName = (document.getElementById('doctorName') as HTMLSelectElement)?.value || '';
+    const doctorDegree = (document.getElementById('doctorDegree') as HTMLSelectElement)?.value || '';
+    const consultation = (document.getElementById('consultation') as HTMLSelectElement)?.value || '';
     const reportDate = (document.getElementById('reportDate') as HTMLInputElement)?.value || '';
+    const reportTime = (document.getElementById('reportTime') as HTMLInputElement)?.value || '';
 
     return {
       patientName: patientName.trim(),
       patientId: patientId.trim(),
+      age: age.trim(),
+      socialNumber: socialNumber.trim(),
+      gender: gender.trim(),
       doctorName: doctorName.trim(),
-      reportDate: reportDate
+      doctorDegree: doctorDegree.trim(),
+      consultation: consultation.trim(),
+      reportDate: reportDate,
+      reportTime: reportTime
     };
   }
 
@@ -374,9 +449,23 @@ export class ReportsEditor {
     // Clear form fields
     (document.getElementById('patientName') as HTMLInputElement).value = '';
     (document.getElementById('patientId') as HTMLInputElement).value = '';
+    (document.getElementById('age') as HTMLInputElement).value = '';
+    (document.getElementById('socialNumber') as HTMLInputElement).value = '';
+    
+    const genderSelect = document.getElementById('gender') as HTMLSelectElement;
+    if (genderSelect) genderSelect.selectedIndex = 0;
+    
     const doctorSelect = document.getElementById('doctorName') as HTMLSelectElement;
     if (doctorSelect) doctorSelect.selectedIndex = 0;
+    
+    const doctorDegreeSelect = document.getElementById('doctorDegree') as HTMLSelectElement;
+    if (doctorDegreeSelect) doctorDegreeSelect.selectedIndex = 0;
+    
+    const consultationSelect = document.getElementById('consultation') as HTMLSelectElement;
+    if (consultationSelect) consultationSelect.selectedIndex = 0;
+    
     this.setCurrentDate();
+    this.setCurrentTime();
 
     // Clear editor
     if (this.quill) {
@@ -392,18 +481,6 @@ export class ReportsEditor {
     this.updateAutosaveStatus('');
   }
 
-  private async populateDoctors(): Promise<void> {
-    try {
-      const doctors = await apiService.getDoctorsList();
-      const select = document.getElementById('doctorName') as HTMLSelectElement;
-      if (!select) return;
-      const options = ['<option value="">اختر الطبيب</option>']
-        .concat((doctors || []).map((d: any) => `<option value="${d.name}">${d.name}</option>`));
-      select.innerHTML = options.join('');
-    } catch (error) {
-      console.error('Error loading doctors list for reports:', error);
-    }
-  }
 
   private async printReport(): Promise<void> {
     const content = this.getEditorContent();
@@ -422,17 +499,42 @@ export class ReportsEditor {
         <div class="clinic-title" id="hospitalNameHeader">&nbsp;</div>
         <div class="clinic-subtitle">تقرير طبي</div>
       </div>
-      <div class="page">
-        <div class="patient-info">
-          <div class="patient-block">
-            <div class="patient-row"><span class="label">اسم المريض:</span><span>${formData.patientName}</span></div>
-            <div class="patient-row"><span class="label">رقم المريض:</span><span>${formData.patientId}</span></div>
+
+      <div class="print-patient-info print-only">
+        <div class="print-patient-right">
+          <div class="print-data-row">
+            <span class="print-data-label">الطبيب: <span class="print-data-value">${formData.doctorName}</span></span>
           </div>
-          <div class="patient-block">
-            <div class="patient-row"><span class="label">اسم الطبيب:</span><span>${formData.doctorName}</span></div>
-            <div class="patient-row"><span class="label">التاريخ:</span><span>${formData.reportDate}</span></div>
+          <div class="print-data-row">
+            <span class="print-data-label">درجة الطبيب: <span class="print-data-value">${formData.doctorDegree}</span></span>
           </div>
         </div>
+        <div class="print-patient-left">
+          <div class="print-data-row">
+            <span class="print-data-label">التاريخ: <span class="print-data-value">${formData.reportDate}</span></span>
+          </div>
+          <div class="print-data-row">
+            <span class="print-data-label">الوقت: <span class="print-data-value">${formData.reportTime}</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="print-only" style="margin-bottom: 12px;">
+        <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
+          <span class="print-data-label">اسم المريض: <span class="print-data-value">${formData.patientName}</span></span>
+        </div>
+        <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
+          <span class="print-data-label">السن: <span class="print-data-value">${formData.age}</span></span>
+          <span class="print-data-label" style="margin-left: 20px;">النوع: <span class="print-data-value">${formData.gender}</span></span>
+          <span class="print-data-label" style="margin-left: 20px;">الرقم القومي: <span class="print-data-value">${formData.socialNumber}</span></span>
+        </div>
+        <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
+          <span class="print-data-label">رقم المريض: <span class="print-data-value">${formData.patientId}</span></span>
+          <span class="print-data-label" style="margin-left: 20px;">العيادة: <span class="print-data-value">${formData.consultation}</span></span>
+        </div>
+      </div>
+
+      <div class="page">
         <div class="content">${content}</div>
         <div class="print-footer">
           <div class="print-footer-section">
@@ -487,12 +589,30 @@ export class ReportsEditor {
     if (report) {
       (document.getElementById('patientName') as HTMLInputElement).value = report.patientName || '';
       (document.getElementById('patientId') as HTMLInputElement).value = report.patientId || '';
+      (document.getElementById('age') as HTMLInputElement).value = report.age || '';
+      (document.getElementById('socialNumber') as HTMLInputElement).value = report.socialNumber || '';
+      
+      const genderSelect = document.getElementById('gender') as HTMLSelectElement;
+      if (genderSelect) genderSelect.value = report.gender || '';
+      
       const doctorSelect = document.getElementById('doctorName') as HTMLSelectElement;
       if (doctorSelect) doctorSelect.value = report.doctorName || '';
+      
+      const doctorDegreeSelect = document.getElementById('doctorDegree') as HTMLSelectElement;
+      if (doctorDegreeSelect) doctorDegreeSelect.value = report.doctorDegree || '';
+      
+      const consultationSelect = document.getElementById('consultation') as HTMLSelectElement;
+      if (consultationSelect) consultationSelect.value = report.consultation || '';
+      
       // Only set date if report has one, otherwise keep the default current date
       if (report.reportDate) {
         (document.getElementById('reportDate') as HTMLInputElement).value = report.reportDate;
       }
+      
+      if (report.reportTime) {
+        (document.getElementById('reportTime') as HTMLInputElement).value = report.reportTime;
+      }
+      
       if (this.quill) (this.quill as any).root.innerHTML = report.content || '';
       this.updateWordCount();
       return;
@@ -506,12 +626,30 @@ export class ReportsEditor {
       if (!data) return;
       (document.getElementById('patientName') as HTMLInputElement).value = data.patientName || '';
       (document.getElementById('patientId') as HTMLInputElement).value = data.patientId || '';
+      (document.getElementById('age') as HTMLInputElement).value = data.age || '';
+      (document.getElementById('socialNumber') as HTMLInputElement).value = data.socialNumber || '';
+      
+      const genderSelect = document.getElementById('gender') as HTMLSelectElement;
+      if (genderSelect) genderSelect.value = data.gender || '';
+      
       const doctorSelect = document.getElementById('doctorName') as HTMLSelectElement;
       if (doctorSelect) doctorSelect.value = data.doctorName || '';
+      
+      const doctorDegreeSelect = document.getElementById('doctorDegree') as HTMLSelectElement;
+      if (doctorDegreeSelect) doctorDegreeSelect.value = data.doctorDegree || '';
+      
+      const consultationSelect = document.getElementById('consultation') as HTMLSelectElement;
+      if (consultationSelect) consultationSelect.value = data.consultation || '';
+      
       // Only set date if draft has one, otherwise keep the default current date
       if (data.reportDate) {
         (document.getElementById('reportDate') as HTMLInputElement).value = data.reportDate;
       }
+      
+      if (data.reportTime) {
+        (document.getElementById('reportTime') as HTMLInputElement).value = data.reportTime;
+      }
+      
       if (this.quill) (this.quill as any).root.innerHTML = data.content || '';
       this.updateWordCount();
       return;

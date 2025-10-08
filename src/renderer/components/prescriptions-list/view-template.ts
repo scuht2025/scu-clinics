@@ -7,6 +7,9 @@ export interface PrescriptionViewData {
   id: number;
   patientName: string;
   patientId: string;
+  age?: string;
+  socialNumber?: string;
+  gender?: string;
   diagnoses?: string;
   doctorName: string;
   doctorDegree?: string;
@@ -54,6 +57,11 @@ export class PrescriptionViewTemplate {
           <span class="print-data-label">اسم المريض: <span class="print-data-value" id="printPatientName"></span></span>
         </div>
         <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
+          <span class="print-data-label">السن: <span class="print-data-value" id="printAge"></span></span>
+          <span class="print-data-label" style="margin-left: 20px;">النوع: <span class="print-data-value" id="printGender"></span></span>
+          <span class="print-data-label" style="margin-left: 20px;">الرقم القومي: <span class="print-data-value" id="printSocialNumber"></span></span>
+        </div>
+        <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
           <span class="print-data-label">التشخيص: <span class="print-data-value" id="printDiagnoses"></span></span>
         </div>
       </div>
@@ -75,7 +83,19 @@ export class PrescriptionViewTemplate {
           <label>اسم المريض:</label>
           <div class="display-value" data-field="patientName">${prescription.patientName}</div>
         </div>
-        <div class="form-group half">
+        <div class="form-group">
+          <label>السن:</label>
+          <div class="display-value" data-field="age">${prescription.age || 'غير محدد'}</div>
+        </div>
+        <div class="form-group">
+          <label>النوع:</label>
+          <div class="display-value" data-field="gender">${prescription.gender || 'غير محدد'}</div>
+        </div>
+        <div class="form-group">
+          <label>الرقم القومي:</label>
+          <div class="display-value" data-field="socialNumber">${prescription.socialNumber || 'غير محدد'}</div>
+        </div>
+        <div class="form-group">
           <label>رقم المريض:</label>
           <div class="display-value" data-field="patientId">${prescription.patientId}</div>
         </div>

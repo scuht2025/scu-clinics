@@ -360,10 +360,10 @@ button:focus,
   box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.3);
 }
 
-/* Medications Table */
+/* Medications Table
 .medications-section {
   margin: 24px 0 150px 0;
-}
+} */
 
 .section-title {
   font-size: 18px;

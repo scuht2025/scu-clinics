@@ -52,6 +52,11 @@ export const buildPrescriptionFormTemplate = ({ doctors, clinics, pharmacies }: 
       <span class="print-data-label">اسم المريض: <span class="print-data-value" id="printPatientName"></span></span>
     </div>
     <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
+      <span class="print-data-label">السن: <span class="print-data-value" id="printAge"></span></span>
+      <span class="print-data-label" style="margin-left: 20px;">النوع: <span class="print-data-value" id="printGender"></span></span>
+      <span class="print-data-label" style="margin-left: 20px;">الرقم القومي: <span class="print-data-value" id="printSocialNumber"></span></span>
+    </div>
+    <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
       <span class="print-data-label">التشخيص: <span class="print-data-value" id="printDiagnoses"></span></span>
     </div>
   </div>
@@ -73,6 +78,12 @@ export const buildPrescriptionFormTemplate = ({ doctors, clinics, pharmacies }: 
           <option value="Specialist">أخصائي</option>
         </select>
       </div>
+      <div class="form-group">
+        <label>العيادة</label>
+        <select id="consultation">
+          ${buildOptions(clinics, 'اختر التخصص')}
+        </select>
+      </div>
       <div class="form-group half">
         <label>التاريخ</label>
         <input type="date" id="prescriptionDate" required>
@@ -85,14 +96,24 @@ export const buildPrescriptionFormTemplate = ({ doctors, clinics, pharmacies }: 
 
     <div class="form-row">
       <div class="form-group">
-        <label>العيادة</label>
-        <select id="consultation">
-          ${buildOptions(clinics, 'اختر التخصص')}
+        <label>اسم المريض</label>
+        <input type="text" id="patientName" placeholder="اسم المريض" required>
+      </div>
+      <div class="form-group">
+        <label>السن</label>
+        <input type="number" id="age" placeholder="السن">
+      </div>
+      <div class="form-group">
+        <label>النوع</label>
+        <select id="gender">
+          <option value="">اختر النوع</option>
+          <option value="ذكر">ذكر</option>
+          <option value="أنثي">أنثي</option>
         </select>
       </div>
       <div class="form-group">
-        <label>اسم المريض</label>
-        <input type="text" id="patientName" placeholder="اسم المريض" required>
+        <label>الرقم القومي</label>
+        <input type="number" id="socialNumber" placeholder="الرقم القومي">
       </div>
       <div class="form-group">
         <label>رقم المريض</label>

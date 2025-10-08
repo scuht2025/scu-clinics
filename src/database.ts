@@ -21,6 +21,9 @@ export interface Prescription {
   id?: number;
   patientName: string;
   patientId: string;
+  age?: string;
+  socialNumber?: string;
+  gender?: string;
   diagnoses: string;
   doctorName: string;
   doctorDegree: string;
@@ -87,7 +90,12 @@ export interface Report {
   id?: number;
   patientName: string;
   patientId: string;
+  age?: string;
+  socialNumber?: string;
+  gender?: string;
   doctorName: string;
+  doctorDegree?: string;
+  consultation?: string;
   reportDate: string;
   reportTime: string;
   content: string; // HTML content from WYSIWYG editor
@@ -159,6 +167,9 @@ function createTables() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       patientName TEXT NOT NULL,
       patientId TEXT NOT NULL,
+      age TEXT,
+      socialNumber TEXT,
+      gender TEXT,
       diagnoses TEXT,
       doctorName TEXT NOT NULL,
       doctorDegree TEXT,
@@ -263,7 +274,12 @@ function createTables() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       patientName TEXT NOT NULL,
       patientId TEXT NOT NULL,
+      age TEXT,
+      socialNumber TEXT,
+      gender TEXT,
       doctorName TEXT NOT NULL,
+      doctorDegree TEXT,
+      consultation TEXT,
       reportDate TEXT NOT NULL,
       reportTime TEXT NOT NULL,
       content TEXT NOT NULL,
@@ -286,6 +302,7 @@ function createTables() {
   // Seed and migrations
   migrateMedicationsTable();
   migratePrescriptionsTable();
+  migrateReportsTable();
   removeLegacyColumns();
   seedInitialData();
 }
@@ -323,6 +340,9 @@ function migratePrescriptionsTable() {
     const existingColumns = pragmaStatement.all() as { name: string }[];
     const hasDiagnoses = existingColumns.some(col => col.name === 'diagnoses');
     const hasDoctorDegree = existingColumns.some(col => col.name === 'doctorDegree');
+    const hasAge = existingColumns.some(col => col.name === 'age');
+    const hasSocialNumber = existingColumns.some(col => col.name === 'socialNumber');
+    const hasGender = existingColumns.some(col => col.name === 'gender');
 
     if (!hasDiagnoses) {
       try {
@@ -339,8 +359,86 @@ function migratePrescriptionsTable() {
         console.warn('Failed to add doctorDegree column to prescriptions:', err);
       }
     }
+
+    if (!hasAge) {
+      try {
+        db.exec(`ALTER TABLE prescriptions ADD COLUMN age TEXT`);
+      } catch (err) {
+        console.warn('Failed to add age column to prescriptions:', err);
+      }
+    }
+
+    if (!hasSocialNumber) {
+      try {
+        db.exec(`ALTER TABLE prescriptions ADD COLUMN socialNumber TEXT`);
+      } catch (err) {
+        console.warn('Failed to add socialNumber column to prescriptions:', err);
+      }
+    }
+
+    if (!hasGender) {
+      try {
+        db.exec(`ALTER TABLE prescriptions ADD COLUMN gender TEXT`);
+      } catch (err) {
+        console.warn('Failed to add gender column to prescriptions:', err);
+      }
+    }
   } catch (error) {
     console.warn('Failed to migrate prescriptions table:', error);
+  }
+}
+
+function migrateReportsTable() {
+  try {
+    const pragmaStatement = db.prepare(`PRAGMA table_info('reports')`);
+    const existingColumns = pragmaStatement.all() as { name: string }[];
+    const hasAge = existingColumns.some(col => col.name === 'age');
+    const hasSocialNumber = existingColumns.some(col => col.name === 'socialNumber');
+    const hasGender = existingColumns.some(col => col.name === 'gender');
+    const hasDoctorDegree = existingColumns.some(col => col.name === 'doctorDegree');
+    const hasConsultation = existingColumns.some(col => col.name === 'consultation');
+
+    if (!hasAge) {
+      try {
+        db.exec(`ALTER TABLE reports ADD COLUMN age TEXT`);
+      } catch (err) {
+        console.warn('Failed to add age column to reports:', err);
+      }
+    }
+
+    if (!hasSocialNumber) {
+      try {
+        db.exec(`ALTER TABLE reports ADD COLUMN socialNumber TEXT`);
+      } catch (err) {
+        console.warn('Failed to add socialNumber column to reports:', err);
+      }
+    }
+
+    if (!hasGender) {
+      try {
+        db.exec(`ALTER TABLE reports ADD COLUMN gender TEXT`);
+      } catch (err) {
+        console.warn('Failed to add gender column to reports:', err);
+      }
+    }
+
+    if (!hasDoctorDegree) {
+      try {
+        db.exec(`ALTER TABLE reports ADD COLUMN doctorDegree TEXT`);
+      } catch (err) {
+        console.warn('Failed to add doctorDegree column to reports:', err);
+      }
+    }
+
+    if (!hasConsultation) {
+      try {
+        db.exec(`ALTER TABLE reports ADD COLUMN consultation TEXT`);
+      } catch (err) {
+        console.warn('Failed to add consultation column to reports:', err);
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to migrate reports table:', error);
   }
 }
 
@@ -498,12 +596,15 @@ export const appointmentService = {
 export const prescriptionService = {
   create: (prescription: Omit<Prescription, 'id'>) => {
     const stmt = db.prepare(`
-      INSERT INTO prescriptions (patientName, patientId, diagnoses, doctorName, doctorDegree, consultation, prescriptionDate, prescriptionTime, medications, pharmacies)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO prescriptions (patientName, patientId, age, socialNumber, gender, diagnoses, doctorName, doctorDegree, consultation, prescriptionDate, prescriptionTime, medications, pharmacies)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     return stmt.run(
       prescription.patientName,
       prescription.patientId,
+      prescription.age,
+      prescription.socialNumber,
+      prescription.gender,
       prescription.diagnoses,
       prescription.doctorName,
       prescription.doctorDegree,

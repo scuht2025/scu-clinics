@@ -9,7 +9,12 @@ export interface SearchableReport {
   id: number;
   patientName: string;
   patientId: string;
+  age?: string;
+  socialNumber?: string;
+  gender?: string;
   doctorName: string;
+  doctorDegree?: string;
+  consultation?: string;
   reportDate?: string;
   reportTime?: string;
   content?: string;

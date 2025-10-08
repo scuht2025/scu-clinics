@@ -51,6 +51,9 @@ export class PrintManager {
       setText('printPrescriptionDate', prescriptionData.prescriptionDate || '');
       setText('printPrescriptionTime', prescriptionData.prescriptionTime || '');
       setText('printPatientName', prescriptionData.patientName || '');
+      setText('printAge', prescriptionData.age || '');
+      setText('printGender', prescriptionData.gender || '');
+      setText('printSocialNumber', prescriptionData.socialNumber || '');
       setText('printDiagnoses', prescriptionData.diagnoses || '');
 
       // Build medications print table
@@ -152,6 +155,9 @@ export class PrintManager {
     return {
       patientName: (document.getElementById('patientName') as HTMLInputElement)?.value || '',
       patientId: (document.getElementById('patientId') as HTMLInputElement)?.value || '',
+      age: (document.getElementById('age') as HTMLInputElement)?.value || '',
+      socialNumber: (document.getElementById('socialNumber') as HTMLInputElement)?.value || '',
+      gender: (document.getElementById('gender') as HTMLSelectElement)?.value || '',
       diagnoses: (document.getElementById('diagnoses') as HTMLInputElement)?.value || '',
       doctorName: (document.getElementById('doctorName') as HTMLSelectElement)?.value || '',
       doctorDegree: (document.getElementById('doctorDegree') as HTMLSelectElement)?.value || '',
@@ -173,6 +179,9 @@ export class PrintManager {
     // Get data from the displayed elements
     const patientNameEl = mainContent.querySelector('[data-field="patientName"]');
     const patientIdEl = mainContent.querySelector('[data-field="patientId"]');
+    const ageEl = mainContent.querySelector('[data-field="age"]');
+    const socialNumberEl = mainContent.querySelector('[data-field="socialNumber"]');
+    const genderEl = mainContent.querySelector('[data-field="gender"]');
     const diagnosesEl = mainContent.querySelector('[data-field="diagnoses"]');
     const doctorNameEl = mainContent.querySelector('[data-field="doctorName"]');
     const doctorDegreeEl = mainContent.querySelector('[data-field="doctorDegree"]');
@@ -212,6 +221,9 @@ export class PrintManager {
     return {
       patientName: patientNameEl?.textContent || '',
       patientId: patientIdEl?.textContent || '',
+      age: ageEl?.textContent || '',
+      socialNumber: socialNumberEl?.textContent || '',
+      gender: genderEl?.textContent || '',
       diagnoses: diagnosesEl?.textContent || '',
       doctorName: doctorNameEl?.textContent?.replace('د/ ', '').trim() || '',
       doctorDegree: doctorDegreeEl?.textContent || '',

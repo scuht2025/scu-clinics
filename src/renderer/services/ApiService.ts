@@ -103,23 +103,23 @@ export class ApiService {
 
   // Reports methods
   async createReport(report: any): Promise<any> {
-    return this.callApi('createReport', report);
+    return this.callApi('create-report', report);
   }
 
   async getReports(): Promise<any[]> {
-    return this.callApi('getReports');
+    return this.callApi('get-reports');
   }
 
   async getReport(id: number): Promise<any> {
-    return this.callApi('getReport', id);
+    return this.callApi('get-report', id);
   }
 
   async updateReport(id: number, report: any): Promise<any> {
-    return this.callApi('updateReport', id, report);
+    return this.callApi('update-report', id, report);
   }
 
   async deleteReport(id: number): Promise<any> {
-    return this.callApi('deleteReport', id);
+    return this.callApi('delete-report', id);
   }
 
   // Admin CRUD methods

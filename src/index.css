@@ -259,19 +259,28 @@ body {
 }
 
 .form-row {
-  display: flex;
+  display: grid;
   gap: 16px;
   margin-bottom: 16px;
   align-items: end;
 }
 
+/* Default 5-column grid for prescription and reports forms */
+.form-row.grid-5 {
+  grid-template-columns: 3fr 2fr 3fr 1fr 1fr; /* 30% | 20% | 30% | 10% | 10% */
+}
+
+/* Second row grid for patient data */
+.form-row.grid-5-second {
+  grid-template-columns: 3fr 1fr 1fr 3fr 2fr; /* 30% | 10% | 10% | 30% | 20% */
+}
+
 .form-group {
-  flex: 1;
   margin-bottom: 0;
 }
 
 .form-group.half {
-  flex: 0.5;
+  /* No longer needed with grid layout */
 }
 
 .form-group label {
@@ -572,6 +581,79 @@ button:focus,
   color: #374151;
 }
 
+/* Print table styles for new header layout */
+.print-header-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 11px;
+}
+
+.print-header-table th,
+.print-header-table td {
+  border: 1px solid #000;
+  padding: 4px 6px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.print-header-table th {
+  background: #f0f0f0;
+  font-weight: bold;
+  font-size: 10px;
+}
+
+.print-header-table .diagnosis-row td {
+  text-align: right;
+  padding: 6px 8px;
+}
+
+/* Print table column widths for prescription and reports */
+.print-header-table .doctor-name-col {
+  width: 35%;
+}
+
+.print-header-table .doctor-degree-col {
+  width: 15%;
+}
+
+.print-header-table .clinic-col {
+  width: 35%;
+}
+
+.print-header-table .datetime-col {
+  width: 15%;
+}
+
+.print-header-table .patient-name-col {
+  width: 35%;
+}
+
+.print-header-table .age-col {
+  width: 10%;
+}
+
+.print-header-table .gender-col {
+  width: 10%;
+}
+
+.print-header-table .social-number-col {
+  width: 25%;
+}
+
+.print-header-table .patient-number-col {
+  width: 20%;
+}
+
+.print-header-table .diagnosis-label {
+  font-weight: bold;
+  width: 20%;
+}
+
+.print-header-table .diagnosis-data {
+  width: 80%;
+}
+
 .print-medications-list {
   display: none;
 }
@@ -658,8 +740,13 @@ button:focus,
   .print-medications-table,
   .print-footer,
   .print-pharmacies,
-  .footer-section {
+  .footer-section,
+  .print-header-table {
     display: block !important;
+  }
+
+  .print-header-table {
+    display: table !important;
   }
 
   .print-patient-info {
@@ -1277,8 +1364,18 @@ button:focus,
 /* Scope reports layout styles to avoid overriding prescription layout */
 .reports-form .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: end;
+}
+
+/* Use the same grid layouts as prescription form */
+.reports-form .form-row.grid-5 {
+  grid-template-columns: 3fr 2fr 3fr 1fr 1fr; /* 30% | 20% | 30% | 10% | 10% */
+}
+
+.reports-form .form-row.grid-5-second {
+  grid-template-columns: 3fr 1fr 1fr 3fr 2fr; /* 30% | 10% | 10% | 30% | 20% */
 }
 
 /* 4-column layout for the top row in Reports page */

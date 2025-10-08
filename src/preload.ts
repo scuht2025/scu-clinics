@@ -109,6 +109,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('update-report', id, report),
   deleteReport: (id: number) =>
     ipcRenderer.invoke('delete-report', id),
+  searchReports: (searchTerm: string) =>
+    ipcRenderer.invoke('search-reports', searchTerm),
 
   // Admin CRUD operations
   createAdminItem: (section: string, data: any) =>
@@ -220,6 +222,7 @@ export interface ElectronAPI {
   getReport: (id: number) => Promise<any>;
   updateReport: (id: number, report: any) => Promise<any>;
   deleteReport: (id: number) => Promise<any>;
+  searchReports: (searchTerm: string) => Promise<any[]>;
 
   // Admin CRUD operations
   createAdminItem: (section: string, data: any) => Promise<any>;

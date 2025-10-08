@@ -57,7 +57,7 @@ export class ReportsEditor {
     return `
       <div class="reports-editor-container" dir="rtl" lang="ar">
         <div class="reports-form">
-          <div class="form-row">
+          <div class="form-row grid-5">
             <div class="form-group">
               <label for="doctorName">الطبيب *</label>
               <select id="doctorName" name="doctorName" required>
@@ -79,17 +79,17 @@ export class ReportsEditor {
                 ${buildOptions(clinics, 'اختر التخصص')}
               </select>
             </div>
-            <div class="form-group half">
+            <div class="form-group">
               <label for="reportDate">التاريخ *</label>
               <input type="date" id="reportDate" name="reportDate" required value="${today}">
             </div>
-            <div class="form-group half">
+            <div class="form-group">
               <label for="reportTime">الوقت *</label>
               <input type="time" id="reportTime" name="reportTime" required value="${currentTime}">
             </div>
           </div>
 
-          <div class="form-row">
+          <div class="form-row grid-5-second">
             <div class="form-group">
               <label for="patientName">اسم المريض *</label>
               <input type="text" id="patientName" name="patientName" required placeholder="اسم المريض">
@@ -500,39 +500,37 @@ export class ReportsEditor {
         <div class="clinic-subtitle">تقرير طبي</div>
       </div>
 
-      <div class="print-patient-info print-only">
-        <div class="print-patient-right">
-          <div class="print-data-row">
-            <span class="print-data-label">الطبيب: <span class="print-data-value">${formData.doctorName}</span></span>
-          </div>
-          <div class="print-data-row">
-            <span class="print-data-label">درجة الطبيب: <span class="print-data-value">${formData.doctorDegree}</span></span>
-          </div>
-        </div>
-        <div class="print-patient-left">
-          <div class="print-data-row">
-            <span class="print-data-label">التاريخ: <span class="print-data-value">${formData.reportDate}</span></span>
-          </div>
-          <div class="print-data-row">
-            <span class="print-data-label">الوقت: <span class="print-data-value">${formData.reportTime}</span></span>
-          </div>
-        </div>
-      </div>
+      <table class="print-header-table print-only">
+        <tr>
+          <th class="doctor-name-col">اسم الطبيب</th>
+          <th class="doctor-degree-col">درجة الطبيب</th>
+          <th class="clinic-col">العيادة</th>
+          <th class="datetime-col">التاريخ والوقت</th>
+        </tr>
+        <tr>
+          <td class="doctor-name-col">${formData.doctorName}</td>
+          <td class="doctor-degree-col">${formData.doctorDegree}</td>
+          <td class="clinic-col">${formData.consultation}</td>
+          <td class="datetime-col">${formData.reportDate} ${formData.reportTime}</td>
+        </tr>
+      </table>
 
-      <div class="print-only" style="margin-bottom: 12px;">
-        <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
-          <span class="print-data-label">اسم المريض: <span class="print-data-value">${formData.patientName}</span></span>
-        </div>
-        <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
-          <span class="print-data-label">السن: <span class="print-data-value">${formData.age}</span></span>
-          <span class="print-data-label" style="margin-left: 20px;">النوع: <span class="print-data-value">${formData.gender}</span></span>
-          <span class="print-data-label" style="margin-left: 20px;">الرقم القومي: <span class="print-data-value">${formData.socialNumber}</span></span>
-        </div>
-        <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
-          <span class="print-data-label">رقم المريض: <span class="print-data-value">${formData.patientId}</span></span>
-          <span class="print-data-label" style="margin-left: 20px;">العيادة: <span class="print-data-value">${formData.consultation}</span></span>
-        </div>
-      </div>
+      <table class="print-header-table print-only">
+        <tr>
+          <th class="patient-name-col">اسم المريض</th>
+          <th class="age-col">السن</th>
+          <th class="gender-col">النوع</th>
+          <th class="social-number-col">الرقم القومي</th>
+          <th class="patient-number-col">رقم المريض</th>
+        </tr>
+        <tr>
+          <td class="patient-name-col">${formData.patientName}</td>
+          <td class="age-col">${formData.age}</td>
+          <td class="gender-col">${formData.gender}</td>
+          <td class="social-number-col">${formData.socialNumber}</td>
+          <td class="patient-number-col">${formData.patientId}</td>
+        </tr>
+      </table>
 
       <div class="page">
         <div class="content">${content}</div>

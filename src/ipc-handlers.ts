@@ -485,6 +485,19 @@ export function setupIpcHandlers(): void {
     }
   });
 
+  ipcMain.handle('search-reports', async (_event, searchTerm) => {
+    try {
+      const sanitizedTerm = Validator.sanitizeString(searchTerm);
+      if (sanitizedTerm.length < 2) {
+        throw new Error('Search term must be at least 2 characters');
+      }
+      return reportsService.search(sanitizedTerm);
+    } catch (error) {
+      logger.error('Error searching reports:', error);
+      throw error;
+    }
+  });
+
   // Generic admin CRUD handlers
   ipcMain.handle('create-admin-item', async (_event, section, data) => {
     try {

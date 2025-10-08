@@ -28,41 +28,44 @@ export const buildPrescriptionFormTemplate = ({ doctors, clinics, pharmacies }: 
     <div class="clinic-subtitle">الروشتة الإلكترونية</div>
   </div>
 
-  <div class="print-patient-info print-only">
-    <div class="print-patient-right">
-      <div class="print-data-row">
-        <span class="print-data-label">الطبيب: <span class="print-data-value" id="printDoctorName"></span></span>
-      </div>
-      <div class="print-data-row">
-        <span class="print-data-label">درجة الطبيب: <span class="print-data-value" id="printDoctorDegree"></span></span>
-      </div>
-    </div>
-    <div class="print-patient-left">
-      <div class="print-data-row">
-        <span class="print-data-label">التاريخ: <span class="print-data-value" id="printPrescriptionDate"></span></span>
-      </div>
-      <div class="print-data-row">
-        <span class="print-data-label">الوقت: <span class="print-data-value" id="printPrescriptionTime"></span></span>
-      </div>
-    </div>
-  </div>
+  <table class="print-header-table print-only">
+    <tr>
+      <th class="doctor-name-col">اسم الطبيب</th>
+      <th class="doctor-degree-col">درجة الطبيب</th>
+      <th class="clinic-col">العيادة</th>
+      <th class="datetime-col">التاريخ والوقت</th>
+    </tr>
+    <tr>
+      <td class="doctor-name-col" id="printDoctorName"></td>
+      <td class="doctor-degree-col" id="printDoctorDegree"></td>
+      <td class="clinic-col" id="printConsultation"></td>
+      <td class="datetime-col" id="printDateTime"></td>
+    </tr>
+  </table>
 
-  <div class="print-only" style="margin-bottom: 12px;">
-    <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
-      <span class="print-data-label">اسم المريض: <span class="print-data-value" id="printPatientName"></span></span>
-    </div>
-    <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
-      <span class="print-data-label">السن: <span class="print-data-value" id="printAge"></span></span>
-      <span class="print-data-label" style="margin-left: 20px;">النوع: <span class="print-data-value" id="printGender"></span></span>
-      <span class="print-data-label" style="margin-left: 20px;">الرقم القومي: <span class="print-data-value" id="printSocialNumber"></span></span>
-    </div>
-    <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
-      <span class="print-data-label">التشخيص: <span class="print-data-value" id="printDiagnoses"></span></span>
-    </div>
-  </div>
+  <table class="print-header-table print-only">
+    <tr>
+      <th class="patient-name-col">اسم المريض</th>
+      <th class="age-col">السن</th>
+      <th class="gender-col">النوع</th>
+      <th class="social-number-col">الرقم القومي</th>
+      <th class="patient-number-col">رقم المريض</th>
+    </tr>
+    <tr>
+      <td class="patient-name-col" id="printPatientName"></td>
+      <td class="age-col" id="printAge"></td>
+      <td class="gender-col" id="printGender"></td>
+      <td class="social-number-col" id="printSocialNumber"></td>
+      <td class="patient-number-col" id="printPatientId"></td>
+    </tr>
+    <tr class="diagnosis-row">
+      <td class="diagnosis-label">التشخيص:</td>
+      <td class="diagnosis-data" colspan="4" id="printDiagnoses"></td>
+    </tr>
+  </table>
 
   <div class="prescription-form">
-    <div class="form-row">
+    <div class="form-row grid-5">
       <div class="form-group">
         <label>الطبيب</label>
         <select id="doctorName" required>
@@ -84,17 +87,17 @@ export const buildPrescriptionFormTemplate = ({ doctors, clinics, pharmacies }: 
           ${buildOptions(clinics, 'اختر التخصص')}
         </select>
       </div>
-      <div class="form-group half">
+      <div class="form-group">
         <label>التاريخ</label>
         <input type="date" id="prescriptionDate" required>
       </div>
-      <div class="form-group half">
+      <div class="form-group">
         <label>الوقت</label>
         <input type="time" id="prescriptionTime" required>
       </div>
     </div>
 
-    <div class="form-row">
+    <div class="form-row grid-5-second">
       <div class="form-group">
         <label>اسم المريض</label>
         <input type="text" id="patientName" placeholder="اسم المريض" required>

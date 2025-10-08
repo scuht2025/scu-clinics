@@ -45,15 +45,16 @@ export class PrintManager {
         }
       };
 
-      // Set patient and doctor info
+      // Set patient and doctor info for new table structure
       setText('printDoctorName', prescriptionData.doctorName || '');
       setText('printDoctorDegree', prescriptionData.doctorDegree || '');
-      setText('printPrescriptionDate', prescriptionData.prescriptionDate || '');
-      setText('printPrescriptionTime', prescriptionData.prescriptionTime || '');
+      setText('printConsultation', prescriptionData.consultation || '');
+      setText('printDateTime', `${prescriptionData.prescriptionDate || ''} ${prescriptionData.prescriptionTime || ''}`);
       setText('printPatientName', prescriptionData.patientName || '');
       setText('printAge', prescriptionData.age || '');
       setText('printGender', prescriptionData.gender || '');
       setText('printSocialNumber', prescriptionData.socialNumber || '');
+      setText('printPatientId', prescriptionData.patientId || '');
       setText('printDiagnoses', prescriptionData.diagnoses || '');
 
       // Build medications print table

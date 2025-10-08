@@ -618,11 +618,11 @@ button:focus,
 }
 
 .print-header-table .clinic-col {
-  width: 35%;
+  width: 30%;
 }
 
 .print-header-table .datetime-col {
-  width: 15%;
+  width: 20%;
 }
 
 .print-header-table .patient-name-col {

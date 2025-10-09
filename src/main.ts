@@ -1,9 +1,10 @@
-import { app, BrowserWindow, Menu, dialog } from 'electron';
+import { app, BrowserWindow, Menu, dialog, powerMonitor } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log/main';
 import path from 'node:path';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'fs';
 import started from 'electron-squirrel-startup';
+import dns from 'node:dns';
 import {
   initializeDatabase,
   getDatabase
@@ -20,8 +21,12 @@ declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
 declare const MAIN_WINDOW_VITE_NAME: string;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (started) {
-  app.quit();
+// Do NOT quit on --squirrel-firstrun so the app actually launches after an update.
+if (started && process.platform === 'win32') {
+  const isFirstRun = process.argv.includes('--squirrel-firstrun');
+  if (!isFirstRun) {
+    app.quit();
+  }
 }
 
 const createWindow = () => {
@@ -450,6 +455,34 @@ function setupAutoUpdater() {
   // Install on quit after a successful download (also handled by explicit quitAndInstall)
   autoUpdater.autoInstallOnAppQuit = true;
 
+  // Persist and resume interrupted downloads
+  const resumeFlagPath = path.join(app.getPath('userData'), 'update-resume.json');
+  let isDownloading = false;
+  let lastProgress = 0;
+  let retryTimer: NodeJS.Timeout | null = null;
+
+  const clearRetryTimer = () => {
+    if (retryTimer) {
+      clearInterval(retryTimer);
+      retryTimer = null;
+    }
+  };
+
+  const scheduleRetryOnReconnect = () => {
+    if (retryTimer) return;
+    retryTimer = setInterval(() => {
+      dns.lookup('github.com', (err) => {
+        if (!err) {
+          clearRetryTimer();
+          if (isDownloading || lastProgress > 0) {
+            log.info('Network restored, resuming update download');
+            autoUpdater.downloadUpdate().catch(e => log.error('Resume download failed:', e));
+          }
+        }
+      });
+    }, 10000);
+  };
+
   // Check for updates when app is ready
   autoUpdater.on('checking-for-update', () => {
     log.info('Checking for updates...');
@@ -480,6 +513,13 @@ function setupAutoUpdater() {
     logMessage = `${logMessage} - Downloaded ${progressObj.percent}%`;
     logMessage = `${logMessage} (${progressObj.transferred}/${progressObj.total})`;
     log.info(logMessage);
+    isDownloading = true;
+    lastProgress = Math.round(progressObj.percent || 0);
+    try {
+      if (lastProgress > 0 && lastProgress < 100) {
+        writeFileSync(resumeFlagPath, JSON.stringify({ inProgress: true, lastProgress }), 'utf-8');
+      }
+    } catch {}
     
     const mainWindow = BrowserWindow.getAllWindows()[0];
     if (mainWindow) {
@@ -489,6 +529,9 @@ function setupAutoUpdater() {
 
   autoUpdater.on('update-downloaded', (info) => {
     log.info('Update downloaded:', info);
+    isDownloading = false;
+    lastProgress = 100;
+    try { unlinkSync(resumeFlagPath); } catch {}
     const mainWindow = BrowserWindow.getAllWindows()[0];
     if (mainWindow) {
       mainWindow.webContents.send('update-downloaded', info);
@@ -499,6 +542,27 @@ function setupAutoUpdater() {
   app.on('before-quit-for-update', () => {
     log.info('App is quitting to install update (before-quit-for-update)');
   });
+
+  // Resume download after system wake if it was interrupted
+  powerMonitor.on('resume', () => {
+    log.info('System resumed from sleep');
+    if (isDownloading || (lastProgress > 0 && lastProgress < 100)) {
+      autoUpdater.downloadUpdate().catch(e => log.error('Resume after resume() failed:', e));
+    }
+  });
+
+  // If previous session had an interrupted download, try to resume on startup
+  try {
+    const shouldResume = existsSync(resumeFlagPath);
+    if (shouldResume) {
+      log.info('Found interrupted update download, will attempt to resume after checking for updates');
+      setTimeout(() => {
+        autoUpdater.checkForUpdates().then(() => {
+          autoUpdater.downloadUpdate().catch(e => log.error('Resume on startup failed:', e));
+        }).catch(e => log.error('Check for updates (resume path) failed:', e));
+      }, 4000);
+    }
+  } catch {}
 
   // Check for updates on startup (after 3 seconds delay)
   setTimeout(() => {
@@ -513,6 +577,15 @@ function setupAutoUpdater() {
       log.error('Failed to check for updates:', err);
     });
   }, 6 * 60 * 60 * 1000);
+
+  // Handle updater errors and retry on network reconnection
+  autoUpdater.on('error', (err: any) => {
+    log.error('Error in auto-updater:', err);
+    if (isDownloading && (err?.code === 'ENOTFOUND' || err?.code === 'ETIMEDOUT' || err?.code === 'ECONNRESET' || err?.message?.toString().includes('network'))) {
+      log.info('Network-related updater error detected, will retry when online');
+      scheduleRetryOnReconnect();
+    }
+  });
 }
 
 // This method will be called when Electron has finished

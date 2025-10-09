@@ -69,13 +69,13 @@ jobs:
         run: |
           cd out\make\squirrel.windows\x64
           $version = "${{ steps.get_version.outputs.VERSION }}"
-          $nupkgFile = "scu-clinics-$version-full.nupkg"
-          $hash = (Get-FileHash -Path $nupkgFile -Algorithm SHA512).Hash.ToLower()
+          $setupFile = "scu-clinics-$version-Setup.exe"
+          $hash = (Get-FileHash -Path $setupFile -Algorithm SHA512).Hash.ToLower()
           $date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
           
           $yaml = @"
           version: $version
-          path: $nupkgFile
+          path: $setupFile
           sha512: $hash
           releaseDate: $date
           "@
@@ -92,7 +92,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: out/make/squirrel.windows/x64/scu-clinics-${{ steps.get_version.outputs.VERSION }}-Setup.exe
-          asset_name: scu-clinics-Setup-${{ steps.get_version.outputs.VERSION }}.exe
+          asset_name: scu-clinics-${{ steps.get_version.outputs.VERSION }}-Setup.exe
           asset_content_type: application/octet-stream
       
       - name: Upload RELEASES file

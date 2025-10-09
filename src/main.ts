@@ -454,6 +454,11 @@ function setupAutoUpdater() {
   autoUpdater.autoDownload = false;
   // Install on quit after a successful download (also handled by explicit quitAndInstall)
   autoUpdater.autoInstallOnAppQuit = true;
+  // Prefer full installer (avoid web installer) and skip differential to reduce 404 noise on blockmaps
+  try {
+    (autoUpdater as any).disableWebInstaller = true;
+    (autoUpdater as any).disableDifferentialDownload = true;
+  } catch {}
 
   // Persist and resume interrupted downloads
   const resumeFlagPath = path.join(app.getPath('userData'), 'update-resume.json');

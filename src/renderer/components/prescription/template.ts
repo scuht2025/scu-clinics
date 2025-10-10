@@ -62,6 +62,10 @@ export const buildPrescriptionFormTemplate = ({ doctors, clinics, pharmacies }: 
       <td class="diagnosis-label">التشخيص:</td>
       <td class="diagnosis-data" colspan="4" id="printDiagnoses"></td>
     </tr>
+    <tr class="diagnosis-row">
+      <td class="diagnosis-label">التشخيص المزمن:</td>
+      <td class="diagnosis-data" colspan="4" id="printChronicDiagnosis"></td>
+    </tr>
   </table>
 
   <div class="prescription-form">
@@ -128,6 +132,13 @@ export const buildPrescriptionFormTemplate = ({ doctors, clinics, pharmacies }: 
       <div class="form-group">
         <label>التشخيص</label>
         <input type="text" id="diagnoses" placeholder="التشخيص">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>التشخيص المزمن</label>
+        <input type="text" id="chronicDiagnosis" placeholder="التشخيص المزمن">
       </div>
     </div>
 

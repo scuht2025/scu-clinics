@@ -25,6 +25,7 @@ export interface Prescription {
   socialNumber?: string;
   gender?: string;
   diagnoses: string;
+  chronicDiagnosis?: string;
   doctorName: string;
   doctorDegree: string;
   consultation: string;
@@ -84,6 +85,14 @@ export interface ProcedureCode {
   uhia_code: string;
   category?: string;
   description?: string;
+}
+
+export interface Diagnosis {
+  id?: number;
+  diagnosis_code?: string;
+  ar_name: string;
+  en_name: string;
+  category?: string;
 }
 
 export interface Report {
@@ -171,6 +180,7 @@ function createTables() {
       socialNumber TEXT,
       gender TEXT,
       diagnoses TEXT,
+      chronicDiagnosis TEXT,
       doctorName TEXT NOT NULL,
       doctorDegree TEXT,
       consultation TEXT NOT NULL,
@@ -268,6 +278,17 @@ function createTables() {
     )
   `);
 
+  // Diagnoses table (for chronic diagnoses autocomplete)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS diagnoses (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      diagnosis_code TEXT UNIQUE,
+      ar_name TEXT NOT NULL,
+      en_name TEXT NOT NULL,
+      category TEXT
+    )
+  `);
+
   // Reports table
   db.exec(`
     CREATE TABLE IF NOT EXISTS reports (
@@ -343,6 +364,7 @@ function migratePrescriptionsTable() {
     const hasAge = existingColumns.some(col => col.name === 'age');
     const hasSocialNumber = existingColumns.some(col => col.name === 'socialNumber');
     const hasGender = existingColumns.some(col => col.name === 'gender');
+    const hasChronicDiagnosis = existingColumns.some(col => col.name === 'chronicDiagnosis');
 
     if (!hasDiagnoses) {
       try {
@@ -381,6 +403,14 @@ function migratePrescriptionsTable() {
         db.exec(`ALTER TABLE prescriptions ADD COLUMN gender TEXT`);
       } catch (err) {
         console.warn('Failed to add gender column to prescriptions:', err);
+      }
+    }
+
+    if (!hasChronicDiagnosis) {
+      try {
+        db.exec(`ALTER TABLE prescriptions ADD COLUMN chronicDiagnosis TEXT`);
+      } catch (err) {
+        console.warn('Failed to add chronicDiagnosis column to prescriptions:', err);
       }
     }
   } catch (error) {
@@ -465,6 +495,9 @@ function createIndexes() {
     CREATE INDEX IF NOT EXISTS idx_procedure_codes_ar_name ON procedure_codes(ar_name);
     CREATE INDEX IF NOT EXISTS idx_procedure_codes_en_name ON procedure_codes(en_name);
     CREATE INDEX IF NOT EXISTS idx_procedure_codes_uhia_code ON procedure_codes(uhia_code);
+    CREATE INDEX IF NOT EXISTS idx_diagnoses_ar_name ON diagnoses(ar_name);
+    CREATE INDEX IF NOT EXISTS idx_diagnoses_en_name ON diagnoses(en_name);
+    CREATE INDEX IF NOT EXISTS idx_diagnoses_code ON diagnoses(diagnosis_code);
     CREATE INDEX IF NOT EXISTS idx_reports_patient_name ON reports(patientName);
     CREATE INDEX IF NOT EXISTS idx_reports_doctor_name ON reports(doctorName);
     CREATE INDEX IF NOT EXISTS idx_reports_date ON reports(reportDate);
@@ -596,8 +629,8 @@ export const appointmentService = {
 export const prescriptionService = {
   create: (prescription: Omit<Prescription, 'id'>) => {
     const stmt = db.prepare(`
-      INSERT INTO prescriptions (patientName, patientId, age, socialNumber, gender, diagnoses, doctorName, doctorDegree, consultation, prescriptionDate, prescriptionTime, medications, pharmacies)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO prescriptions (patientName, patientId, age, socialNumber, gender, diagnoses, chronicDiagnosis, doctorName, doctorDegree, consultation, prescriptionDate, prescriptionTime, medications, pharmacies)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     return stmt.run(
       prescription.patientName,
@@ -606,6 +639,7 @@ export const prescriptionService = {
       prescription.socialNumber,
       prescription.gender,
       prescription.diagnoses,
+      prescription.chronicDiagnosis,
       prescription.doctorName,
       prescription.doctorDegree,
       prescription.consultation,
@@ -813,6 +847,20 @@ export const procedureCodesService = {
 };
 
 export const reportsService = createCRUDService<Report>('reports', 'reportDate');
+
+export const diagnosesService = {
+  ...createCRUDService<Diagnosis>('diagnoses', 'ar_name'),
+  search: (searchTerm: string): Diagnosis[] => {
+    const stmt = db.prepare(`
+      SELECT * FROM diagnoses
+      WHERE ar_name LIKE ? OR en_name LIKE ? OR diagnosis_code LIKE ?
+      ORDER BY ar_name
+      LIMIT 20
+    `);
+    const term = `%${searchTerm}%`;
+    return stmt.all(term, term, term) as Diagnosis[];
+  }
+};
 
 // Hospital configuration service (single row)
 export const hospitalConfigService = {

@@ -13,6 +13,7 @@ export class AdminInterface {
   private currentSection = 'database';
   private procedureCodesData: any[] = [];
   private medicationsData: any[] = [];
+  private diagnosesData: any[] = [];
   private currentPage = 1;
   private itemsPerPage = 50;
   private filteredData: any[] = [];
@@ -42,6 +43,7 @@ export class AdminInterface {
           <button class="admin-tab" data-section="medications">الأدوية</button>
           <button class="admin-tab" data-section="pharmacies">الصيدليات</button>
           <button class="admin-tab" data-section="procedure-codes">رموز الإجراءات</button>
+          <button class="admin-tab" data-section="diagnoses">التشخيصات المزمنة</button>
         </div>
 
         <div class="admin-content" id="admin-content">
@@ -440,6 +442,17 @@ export class AdminInterface {
             { key: 'category', label: 'الفئة', type: 'text', required: false }
           ];
           break;
+        case 'diagnoses':
+          data = await apiService.getDiagnoses();
+          this.diagnosesData = data; // Store for filtering
+          title = 'التشخيصات المزمنة';
+          fields = [
+            { key: 'diagnosis_code', label: 'كود التشخيص', type: 'text', required: false },
+            { key: 'ar_name', label: 'الاسم العربي', type: 'text', required: true },
+            { key: 'en_name', label: 'الاسم الإنجليزي', type: 'text', required: true },
+            { key: 'category', label: 'الفئة', type: 'text', required: false }
+          ];
+          break;
       }
 
       // Reset pagination for new section
@@ -455,9 +468,9 @@ export class AdminInterface {
   }
 
   private createAdminSectionContent(_section: string, title: string, data: any[], fields: any[]): string {
-    const hasSearch = _section === 'procedure-codes' || _section === 'medications';
-    const hasImportExport = _section === 'procedure-codes' || _section === 'medications';
-    const hasPagination = _section === 'medications' || _section === 'procedure-codes';
+    const hasSearch = _section === 'procedure-codes' || _section === 'medications' || _section === 'diagnoses';
+    const hasImportExport = _section === 'procedure-codes' || _section === 'medications' || _section === 'diagnoses';
+    const hasPagination = _section === 'medications' || _section === 'procedure-codes' || _section === 'diagnoses';
     
     // Paginate data if needed
     let displayData = data;
@@ -504,6 +517,12 @@ export class AdminInterface {
             <li><code>genericName</code> - Generic Name (optional)</li>
             <li><code>prescribingLevel</code> - Prescribing Level (optional)</li>
             <li><code>preAuthorizationProtocol</code> - Pre-Authorization/Protocol (optional)</li>
+            ` : ''}
+            ${_section === 'diagnoses' ? `
+            <li><code>diagnosis_code</code> - Diagnosis Code (optional; left empty cells will be auto-filled randomly)</li>
+            <li><code>ar_name</code> - Arabic Name (required)</li>
+            <li><code>en_name</code> - English Name (required)</li>
+            <li><code>category</code> - Category (optional)</li>
             ` : ''}
           </ol>
           <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #666;">
@@ -625,7 +644,7 @@ export class AdminInterface {
     saveBtn?.addEventListener('click', () => this.saveItem(section));
 
     // Add search functionality
-    if (section === 'procedure-codes' || section === 'medications') {
+    if (section === 'procedure-codes' || section === 'medications' || section === 'diagnoses') {
       const searchInput = document.getElementById('searchInput') as HTMLInputElement;
       searchInput?.addEventListener('input', (e) => {
         const query = (e.target as HTMLInputElement).value.toLowerCase().trim();
@@ -633,6 +652,8 @@ export class AdminInterface {
           this.filterProcedureCodes(query, fields);
         } else if (section === 'medications') {
           this.filterMedications(query, fields);
+        } else if (section === 'diagnoses') {
+          this.filterDiagnoses(query, fields);
         }
       });
 
@@ -643,6 +664,8 @@ export class AdminInterface {
           this.exportProceduresToCSV();
         } else if (section === 'medications') {
           this.exportMedicationsToCSV();
+        } else if (section === 'diagnoses') {
+          this.exportDiagnosesToCSV();
         }
       });
 
@@ -652,12 +675,14 @@ export class AdminInterface {
           this.importProceduresFromCSV();
         } else if (section === 'medications') {
           this.importMedicationsFromCSV();
+        } else if (section === 'diagnoses') {
+          this.importDiagnosesFromCSV();
         }
       });
     }
 
     // Add pagination event listeners
-    if (section === 'medications' || section === 'procedure-codes') {
+    if (section === 'medications' || section === 'procedure-codes' || section === 'diagnoses') {
       const firstPageBtn = document.getElementById('firstPageBtn');
       firstPageBtn?.addEventListener('click', () => this.goToPage(1, section, fields));
 
@@ -1108,6 +1133,194 @@ export class AdminInterface {
     }
 
     this.renderTable('medications', this.filteredData, fields);
+  }
+
+  private filterDiagnoses(query: string, fields: any[]): void {
+    // Reset to first page when filtering
+    this.currentPage = 1;
+
+    if (query) {
+      this.filteredData = this.diagnosesData.filter(item => {
+        const arName = (item.ar_name || '').toLowerCase();
+        const enName = (item.en_name || '').toLowerCase();
+        const code = (item.diagnosis_code || '').toLowerCase();
+        const category = (item.category || '').toLowerCase();
+
+        return arName.includes(query) ||
+               enName.includes(query) ||
+               code.includes(query) ||
+               category.includes(query);
+      });
+    } else {
+      this.filteredData = this.diagnosesData;
+    }
+
+    this.renderTable('diagnoses', this.filteredData, fields);
+  }
+
+  private exportDiagnosesToCSV(): void {
+    try {
+      const headers = ['diagnosis_code', 'ar_name', 'en_name', 'category'];
+      const csvRows = [headers.join(',')];
+
+      this.diagnosesData.forEach(item => {
+        const row = [
+          this.escapeCSVField(item.diagnosis_code || ''),
+          this.escapeCSVField(item.ar_name || ''),
+          this.escapeCSVField(item.en_name || ''),
+          this.escapeCSVField(item.category || '')
+        ];
+        csvRows.push(row.join(','));
+      });
+
+      const csvContent = csvRows.join('\n');
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `diagnoses-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      void Dialog.alert('تم تصدير البيانات بنجاح');
+    } catch (error) {
+      console.error('Error exporting diagnoses:', error);
+      void Dialog.alert('خطأ في تصدير البيانات');
+    }
+  }
+
+  private async importDiagnosesFromCSV(): Promise<void> {
+    try {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = '.csv';
+
+      fileInput.onchange = async (e: Event) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          try {
+            const csvContent = event.target?.result as string;
+            const lines = csvContent.split('\n').filter(line => line.trim());
+            if (lines.length < 2) {
+              await Dialog.alert('الملف فارغ أو غير صحيح');
+              return;
+            }
+
+            const headers = this.parseCSVLine(lines[0]);
+            // Required: ar_name, en_name; Optional: diagnosis_code, category
+            const arNameIdx = headers.findIndex(h => h.toLowerCase().trim() === 'ar_name');
+            const enNameIdx = headers.findIndex(h => h.toLowerCase().trim() === 'en_name');
+            const codeIdx = headers.findIndex(h => h.toLowerCase().trim() === 'diagnosis_code');
+            const categoryIdx = headers.findIndex(h => h.toLowerCase().trim() === 'category');
+
+            if (arNameIdx < 0 || enNameIdx < 0) {
+              await Dialog.alert('رؤوس الأعمدة غير صحيحة. يجب أن تحتوي على: ar_name, en_name');
+              return;
+            }
+
+            const diagnoses: any[] = [];
+            const skippedRows: number[] = [];
+
+            for (let i = 1; i < lines.length; i++) {
+              const values = this.parseCSVLine(lines[i]);
+              const arName = (values[arNameIdx] || '').trim();
+              const enName = (values[enNameIdx] || '').trim();
+              let diagnosisCode = codeIdx >= 0 ? (values[codeIdx] || '').trim() : '';
+              const category = categoryIdx >= 0 ? (values[categoryIdx] || '').trim() : '';
+
+              if (!arName || !enName) {
+                skippedRows.push(i + 1);
+                continue;
+              }
+
+              if (!diagnosisCode) {
+                diagnosisCode = this.generateRandomDiagnosisCode();
+              }
+
+              diagnoses.push({ diagnosis_code: diagnosisCode, ar_name: arName, en_name: enName, category });
+            }
+
+            if (diagnoses.length === 0) {
+              await Dialog.alert('لا توجد بيانات صالحة للاستيراد');
+              return;
+            }
+
+            let confirmMessage = `هل تريد استيراد ${diagnoses.length} تشخيص؟`;
+            if (skippedRows.length > 0) {
+              confirmMessage += `\n\nتحذير: تم تجاهل ${skippedRows.length} صف بسبب بيانات ناقصة.`;
+            }
+
+            const confirmed = await Dialog.confirm(confirmMessage);
+            if (!confirmed) return;
+
+            let successCount = 0;
+            let errorCount = 0;
+            let duplicateCount = 0;
+
+            for (const dx of diagnoses) {
+              try {
+                await apiService.createAdminItem('diagnoses', dx);
+                successCount++;
+              } catch (error: any) {
+                if (error?.message?.includes('UNIQUE constraint failed')) {
+                  // Try regenerate a few times if duplicate on randomly generated code
+                  let retried = 0;
+                  let inserted = false;
+                  while (retried < 5 && !inserted) {
+                    try {
+                      const retryDx = { ...dx, diagnosis_code: this.generateRandomDiagnosisCode() };
+                      await apiService.createAdminItem('diagnoses', retryDx);
+                      successCount++;
+                      inserted = true;
+                    } catch (err: any) {
+                      if (err?.message?.includes('UNIQUE constraint failed')) {
+                        retried++;
+                        continue;
+                      } else {
+                        errorCount++;
+                        break;
+                      }
+                    }
+                  }
+                  if (!inserted) duplicateCount++;
+                } else {
+                  console.error('Error importing diagnosis:', dx, error);
+                  errorCount++;
+                }
+              }
+            }
+
+            await this.loadSection('diagnoses');
+
+            let resultMessage = `Import completed:\n✓ Successfully imported: ${successCount}`;
+            if (duplicateCount > 0) resultMessage += `\n⚠ Skipped (duplicates): ${duplicateCount}`;
+            if (errorCount > 0) resultMessage += `\n✗ Failed: ${errorCount}`;
+            await Dialog.alert(resultMessage);
+          } catch (error) {
+            console.error('Error parsing CSV:', error);
+            await Dialog.alert('خطأ في قراءة الملف. تأكد من صحة التنسيق.');
+          }
+        };
+
+        reader.readAsText(file, 'UTF-8');
+      };
+
+      fileInput.click();
+    } catch (error) {
+      console.error('Error importing diagnoses:', error);
+      void Dialog.alert('خطأ في استيراد البيانات');
+    }
+  }
+
+  private generateRandomDiagnosisCode(): string {
+    const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
+    const ts = Date.now().toString(36).toUpperCase();
+    return `DX-${ts}-${rand}`;
   }
 
   private exportMedicationsToCSV(): void {

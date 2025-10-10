@@ -21,6 +21,7 @@ import {
   medicationsService,
   pharmaciesService,
   procedureCodesService,
+  diagnosesService,
   reportsService,
   hospitalConfigService
 } from './database';
@@ -427,6 +428,29 @@ export function setupIpcHandlers(): void {
     }
   });
 
+  // Diagnoses handlers
+  ipcMain.handle('get-diagnoses', async () => {
+    try {
+      return diagnosesService.findAll();
+    } catch (error) {
+      logger.error('Error getting diagnoses:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('search-diagnoses', async (_event, searchTerm) => {
+    try {
+      const sanitizedTerm = Validator.sanitizeString(searchTerm);
+      if (sanitizedTerm.length < 1) {
+        return [];
+      }
+      return diagnosesService.search(sanitizedTerm);
+    } catch (error) {
+      logger.error('Error searching diagnoses:', error);
+      throw error;
+    }
+  });
+
   // Reports handlers
   ipcMain.handle('create-report', async (_event, report) => {
     try {
@@ -723,6 +747,8 @@ function getServiceBySection(section: string) {
       return pharmaciesService;
     case 'procedure-codes':
       return procedureCodesService;
+    case 'diagnoses':
+      return diagnosesService;
     default:
       return null;
   }

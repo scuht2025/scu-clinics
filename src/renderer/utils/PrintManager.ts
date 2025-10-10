@@ -56,6 +56,7 @@ export class PrintManager {
       setText('printSocialNumber', prescriptionData.socialNumber || '');
       setText('printPatientId', prescriptionData.patientId || '');
       setText('printDiagnoses', prescriptionData.diagnoses || '');
+      setText('printChronicDiagnosis', prescriptionData.chronicDiagnosis || '');
 
       // Build medications print table
       const table = document.getElementById('printMedicationsTable') as HTMLTableElement | null;
@@ -160,6 +161,7 @@ export class PrintManager {
       socialNumber: (document.getElementById('socialNumber') as HTMLInputElement)?.value || '',
       gender: (document.getElementById('gender') as HTMLSelectElement)?.value || '',
       diagnoses: (document.getElementById('diagnoses') as HTMLInputElement)?.value || '',
+      chronicDiagnosis: (document.getElementById('chronicDiagnosis') as HTMLInputElement)?.value || '',
       doctorName: (document.getElementById('doctorName') as HTMLSelectElement)?.value || '',
       doctorDegree: (document.getElementById('doctorDegree') as HTMLSelectElement)?.value || '',
       consultation: (document.getElementById('consultation') as HTMLSelectElement)?.value || '',
@@ -184,6 +186,7 @@ export class PrintManager {
     const socialNumberEl = mainContent.querySelector('[data-field="socialNumber"]');
     const genderEl = mainContent.querySelector('[data-field="gender"]');
     const diagnosesEl = mainContent.querySelector('[data-field="diagnoses"]');
+    const chronicDiagnosisEl = mainContent.querySelector('[data-field="chronicDiagnosis"]');
     const doctorNameEl = mainContent.querySelector('[data-field="doctorName"]');
     const doctorDegreeEl = mainContent.querySelector('[data-field="doctorDegree"]');
     const consultationEl = mainContent.querySelector('[data-field="consultation"]');
@@ -226,6 +229,7 @@ export class PrintManager {
       socialNumber: socialNumberEl?.textContent || '',
       gender: genderEl?.textContent || '',
       diagnoses: diagnosesEl?.textContent || '',
+      chronicDiagnosis: chronicDiagnosisEl?.textContent || '',
       doctorName: doctorNameEl?.textContent?.replace('د/ ', '').trim() || '',
       doctorDegree: doctorDegreeEl?.textContent || '',
       consultation: consultationEl?.textContent || '',

@@ -11,6 +11,7 @@ export interface PrescriptionViewData {
   socialNumber?: string;
   gender?: string;
   diagnoses?: string;
+  chronicDiagnosis?: string;
   doctorName: string;
   doctorDegree?: string;
   consultation: string;
@@ -64,6 +65,9 @@ export class PrescriptionViewTemplate {
         <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
           <span class="print-data-label">التشخيص: <span class="print-data-value" id="printDiagnoses"></span></span>
         </div>
+        <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
+          <span class="print-data-label">التشخيص المزمن: <span class="print-data-value" id="printChronicDiagnosis"></span></span>
+        </div>
       </div>
 
       <div class="prescription-form prescription-view">
@@ -105,6 +109,12 @@ export class PrescriptionViewTemplate {
         <div class="form-group">
           <label>التشخيص:</label>
           <div class="display-value" data-field="diagnoses">${prescription.diagnoses || 'غير محدد'}</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>التشخيص المزمن:</label>
+          <div class="display-value" data-field="chronicDiagnosis">${prescription.chronicDiagnosis || 'غير محدد'}</div>
         </div>
       </div>
 

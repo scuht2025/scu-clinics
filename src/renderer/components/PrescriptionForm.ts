@@ -10,6 +10,7 @@ import { Dialog } from './Dialog';
 import { buildPrescriptionFormTemplate } from './prescription/template';
 import { PrescriptionPreferences } from './prescription/preferences';
 import { MedicationTableManager } from './prescription/medication-table';
+import { ChronicDiagnosisAutocomplete } from './prescription/chronic-diagnosis-input';
 
 export class PrescriptionForm {
   private eventManager: EventManager;
@@ -45,6 +46,7 @@ export class PrescriptionForm {
     this.setupEventListeners();
     this.setCurrentDateTime();
     await this.medicationTable.initialize();
+    await ChronicDiagnosisAutocomplete.attachToInputById('chronicDiagnosis');
     await this.populateFormIfEditing();
     this.preferences.restoreSelections();
     // Apply hospital header text dynamically
@@ -159,6 +161,7 @@ export class PrescriptionForm {
       socialNumber: (document.getElementById('socialNumber') as HTMLInputElement).value,
       gender: (document.getElementById('gender') as HTMLSelectElement).value,
       diagnoses: (document.getElementById('diagnoses') as HTMLInputElement).value,
+      chronicDiagnosis: (document.getElementById('chronicDiagnosis') as HTMLInputElement)?.value || '',
       doctorName: (document.getElementById('doctorName') as HTMLSelectElement).value,
       doctorDegree: (document.getElementById('doctorDegree') as HTMLSelectElement).value,
       consultation: (document.getElementById('consultation') as HTMLSelectElement).value,
@@ -271,6 +274,7 @@ export class PrescriptionForm {
         const socialNumberInput = document.getElementById('socialNumber') as HTMLInputElement;
         const genderSelect = document.getElementById('gender') as HTMLSelectElement;
         const diagnosesInput = document.getElementById('diagnoses') as HTMLInputElement;
+        const chronicDiagnosisInput = document.getElementById('chronicDiagnosis') as HTMLInputElement;
         const doctorSelect = document.getElementById('doctorName') as HTMLSelectElement;
         const doctorDegreeSelect = document.getElementById('doctorDegree') as HTMLSelectElement;
         const consultationSelect = document.getElementById('consultation') as HTMLSelectElement;
@@ -283,6 +287,7 @@ export class PrescriptionForm {
         if (socialNumberInput) socialNumberInput.value = prescriptionData.socialNumber || '';
         if (genderSelect) genderSelect.value = prescriptionData.gender || '';
         if (diagnosesInput) diagnosesInput.value = prescriptionData.diagnoses || '';
+        if (chronicDiagnosisInput) chronicDiagnosisInput.value = prescriptionData.chronicDiagnosis || '';
         if (doctorSelect) doctorSelect.value = prescriptionData.doctorName || '';
         if (doctorDegreeSelect) doctorDegreeSelect.value = prescriptionData.doctorDegree || '';
         if (consultationSelect) consultationSelect.value = prescriptionData.consultation || '';

@@ -10,6 +10,7 @@ export interface SearchablePrescription {
   patientName: string;
   patientId: string;
   diagnoses?: string;
+  chronicDiagnosis?: string;
   doctorName: string;
   doctorDegree?: string;
   consultation: string;
@@ -36,6 +37,7 @@ export class PrescriptionsSearchManager {
         { name: 'patientName', weight: 2 },
         { name: 'patientId', weight: 1.5 },
         { name: 'diagnoses', weight: 1.5 },
+        { name: 'chronicDiagnosis', weight: 1.2 },
         { name: 'doctorName', weight: 1.5 },
         { name: 'consultation', weight: 1 },
         { name: 'medicationsText', weight: 2 }

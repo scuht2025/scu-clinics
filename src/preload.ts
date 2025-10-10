@@ -92,6 +92,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getPharmacies: () =>
     ipcRenderer.invoke('get-pharmacies'),
 
+  // Diagnoses operations
+  getDiagnoses: () =>
+    ipcRenderer.invoke('get-diagnoses'),
+  searchDiagnoses: (searchTerm: string) =>
+    ipcRenderer.invoke('search-diagnoses', searchTerm),
+
   // Procedure codes operations
   getProcedureCodes: () =>
     ipcRenderer.invoke('get-procedure-codes'),
@@ -211,6 +217,10 @@ export interface ElectronAPI {
   getDurations: () => Promise<Duration[]>;
   getMedications: () => Promise<Medication[]>;
   getPharmacies: () => Promise<Pharmacy[]>;
+
+  // Diagnoses operations
+  getDiagnoses: () => Promise<any[]>;
+  searchDiagnoses: (searchTerm: string) => Promise<any[]>;
 
   // Procedure codes operations
   getProcedureCodes: () => Promise<any[]>;

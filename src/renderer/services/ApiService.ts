@@ -101,6 +101,14 @@ export class ApiService {
     return this.callApi('searchProcedureCodes', searchTerm);
   }
 
+  async getDiagnoses(): Promise<any[]> {
+    return this.getCachedData('diagnoses', () => this.callApi('getDiagnoses'));
+  }
+
+  async searchDiagnoses(searchTerm: string): Promise<any[]> {
+    return this.callApi('searchDiagnoses', searchTerm);
+  }
+
   // Reports methods
   async createReport(report: any): Promise<any> {
     return this.callApi('createReport', report);
@@ -217,7 +225,8 @@ export class ApiService {
       'durations': 'durations',
       'medications': 'medications',
       'pharmacies': 'pharmacies',
-      'procedure-codes': 'procedure-codes'
+      'procedure-codes': 'procedure-codes',
+      'diagnoses': 'diagnoses'
     };
     
     const cacheKey = cacheKeyMap[section];

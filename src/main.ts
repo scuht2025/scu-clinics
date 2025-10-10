@@ -375,6 +375,120 @@ function seedProcedureCodesIfNeeded() {
   upsertMeta.run(SEED_KEY, SEED_VERSION);
 }
 
+// Seed diagnoses from bundled CSV on first launch (or when version changes)
+function seedDiagnosesIfNeeded() {
+  const db = getDatabase();
+
+  // Ensure metadata table exists
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS app_metadata (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `);
+
+  const SEED_KEY = 'diagnoses_seed_version';
+  const SEED_VERSION = 'v1';
+  const getMeta = db.prepare('SELECT value FROM app_metadata WHERE key = ?');
+  const current = getMeta.get(SEED_KEY) as { value: string } | undefined;
+  if (current?.value === SEED_VERSION) {
+    return; // already seeded with this version
+  }
+
+  // Locate CSV in production or development
+  const candidates: string[] = [
+    path.join(__dirname, 'database', 'diagnosis.csv'),
+    path.join(process.resourcesPath, 'database', 'diagnosis.csv'),
+    path.join(process.resourcesPath, 'diagnosis.csv'),
+    path.join(process.cwd(), 'src', 'database', 'diagnosis.csv'),
+  ];
+  const csvPath = candidates.find(p => existsSync(p));
+  if (!csvPath) {
+    log.info('Diagnoses CSV not found; skipping seeding');
+    return; // csv not found; skip seeding
+  }
+
+  const raw = readFileSync(csvPath, 'utf8');
+  const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
+  if (lines.length <= 1) return;
+  
+  // Light-weight CSV parser that handles quoted commas
+  const parseCsvLine = (line: string): string[] => {
+    const result: string[] = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQuotes && line[i + 1] === '"') { // escaped quote
+          cur += '"'; i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === ',' && !inQuotes) {
+        result.push(cur.trim()); cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+    result.push(cur.trim());
+    return result;
+  };
+
+  // Determine header and column indices
+  const headerCells = parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
+  const hasHeader = headerCells.some(h => h.includes('diagnosis_code') || h.includes('ar_name') || h.includes('en_name'));
+  const rowsStart = hasHeader ? 1 : 0;
+
+  const idxDiagnosisCode = hasHeader ? headerCells.findIndex(h => h.includes('diagnosis_code')) : 0;
+  const idxEnName = hasHeader ? headerCells.findIndex(h => h.includes('en_name')) : 1;
+  const idxArName = hasHeader ? headerCells.findIndex(h => h.includes('ar_name')) : 2;
+  const idxCategory = hasHeader ? headerCells.findIndex(h => h.includes('category')) : 3;
+
+  const insert = db.prepare('INSERT OR REPLACE INTO diagnoses (diagnosis_code, en_name, ar_name, category) VALUES (?, ?, ?, ?)');
+  const tx = db.transaction((rows: Array<{ diagnosisCode: string; enName: string; arName: string; category?: string }>) => {
+    for (const r of rows) {
+      const diagnosisCode = (r.diagnosisCode || '').trim();
+      const enName = (r.enName || '').trim();
+      const arName = (r.arName || '').trim();
+      const category = (r.category || '').trim() || null;
+      // Diagnosis code can be empty, but we need at least ar_name and en_name
+      if (arName.length === 0 || enName.length === 0) {
+        continue;
+      }
+      insert.run(diagnosisCode || null, enName, arName, category);
+    }
+  });
+
+  const rows: Array<{ diagnosisCode: string; enName: string; arName: string; category?: string }> = [];
+  for (let i = rowsStart; i < lines.length; i++) {
+    const cells = parseCsvLine(lines[i]);
+    if (cells.length < 2) continue;
+    const diagnosisCode = cells[idxDiagnosisCode >= 0 ? idxDiagnosisCode : 0] || '';
+    const enName = cells[idxEnName >= 0 ? idxEnName : 1] || '';
+    const arName = cells[idxArName >= 0 ? idxArName : 2] || '';
+    const category = idxCategory >= 0 ? cells[idxCategory] || '' : '';
+    rows.push({ diagnosisCode, enName, arName, category });
+  }
+
+  // In-memory dedupe (case-insensitive by ar_name + en_name)
+  const seen = new Set<string>();
+  const uniqueRows = rows.filter(r => {
+    const key = `${(r.arName || '').toLowerCase()}||${(r.enName || '').toLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  tx(uniqueRows);
+
+  log.info(`Seeded ${uniqueRows.length} diagnoses`);
+
+  // Persist seed version
+  const upsertMeta = db.prepare(`INSERT INTO app_metadata(key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`);
+  upsertMeta.run(SEED_KEY, SEED_VERSION);
+}
+
 // Set up application menu
 function setupApplicationMenu() {
   const template: (Electron.MenuItemConstructorOptions | Electron.MenuItem)[] = [
@@ -606,6 +720,9 @@ app.on('ready', async () => {
 
     // First-launch procedure codes seeding
     seedProcedureCodesIfNeeded();
+
+    // First-launch diagnoses seeding
+    seedDiagnosesIfNeeded();
 
     // Set up IPC handlers
     setupIpcHandlers();

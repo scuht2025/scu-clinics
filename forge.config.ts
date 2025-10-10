@@ -17,6 +17,7 @@ const config: ForgeConfig = {
     extraResource: [
       'src/database/meds_1.csv',
       'src/database/procedure-codes.csv',
+      'src/database/diagnosis.csv',
       // Include the app icon so we can reference it at runtime if needed
       'assets/logo.ico',
       // Include app-update.yml for electron-updater

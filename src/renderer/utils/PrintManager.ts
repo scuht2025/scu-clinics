@@ -50,6 +50,9 @@ export class PrintManager {
       setText('printDoctorDegree', prescriptionData.doctorDegree || '');
       setText('printConsultation', prescriptionData.consultation || '');
       setText('printDateTime', `${prescriptionData.prescriptionDate || ''} ${prescriptionData.prescriptionTime || ''}`);
+      // For view-template which displays date/time separately
+      setText('printPrescriptionDate', prescriptionData.prescriptionDate || '');
+      setText('printPrescriptionTime', prescriptionData.prescriptionTime || '');
       setText('printPatientName', prescriptionData.patientName || '');
       setText('printAge', prescriptionData.age || '');
       setText('printGender', prescriptionData.gender || '');

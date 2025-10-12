@@ -59,11 +59,11 @@ export const buildPrescriptionFormTemplate = ({ doctors, clinics, pharmacies }: 
       <td class="patient-number-col" id="printPatientId"></td>
     </tr>
     <tr class="diagnosis-row">
-      <td class="diagnosis-label">التشخيص:</td>
+      <td class="diagnosis-label">التشخيص (غير مزمن):</td>
       <td class="diagnosis-data" colspan="4" id="printDiagnoses"></td>
     </tr>
     <tr class="diagnosis-row">
-      <td class="diagnosis-label">التشخيص المزمن:</td>
+      <td class="diagnosis-label">التشخيص (مزمن):</td>
       <td class="diagnosis-data" colspan="4" id="printChronicDiagnosis"></td>
     </tr>
   </table>
@@ -130,15 +130,15 @@ export const buildPrescriptionFormTemplate = ({ doctors, clinics, pharmacies }: 
 
     <div class="form-row">
       <div class="form-group">
-        <label>التشخيص</label>
-        <input type="text" id="diagnoses" placeholder="التشخيص">
+        <label>التشخيص (غير مزمن)</label>
+        <input type="text" id="diagnoses" placeholder="التشخيص (غير مزمن)">
       </div>
     </div>
 
     <div class="form-row">
       <div class="form-group">
-        <label>التشخيص المزمن</label>
-        <input type="text" id="chronicDiagnosis" placeholder="التشخيص المزمن">
+        <label>التشخيص (مزمن)</label>
+        <input type="text" id="chronicDiagnosis" placeholder="التشخيص (مزمن)">
       </div>
     </div>
 

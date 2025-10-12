@@ -63,10 +63,10 @@ export class PrescriptionViewTemplate {
           <span class="print-data-label" style="margin-left: 20px;">الرقم القومي: <span class="print-data-value" id="printSocialNumber"></span></span>
         </div>
         <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
-          <span class="print-data-label">التشخيص: <span class="print-data-value" id="printDiagnoses"></span></span>
+          <span class="print-data-label">التشخيص (غير مزمن): <span class="print-data-value" id="printDiagnoses"></span></span>
         </div>
         <div class="print-data-row" style="border-bottom: 1px solid #000; padding-bottom: 8px;">
-          <span class="print-data-label">التشخيص المزمن: <span class="print-data-value" id="printChronicDiagnosis"></span></span>
+          <span class="print-data-label">التشخيص (مزمن): <span class="print-data-value" id="printChronicDiagnosis"></span></span>
         </div>
       </div>
 
@@ -107,13 +107,13 @@ export class PrescriptionViewTemplate {
 
       <div class="form-row">
         <div class="form-group">
-          <label>التشخيص:</label>
+          <label>التشخيص (غير مزمن):</label>
           <div class="display-value" data-field="diagnoses">${prescription.diagnoses || 'غير محدد'}</div>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>التشخيص المزمن:</label>
+          <label>التشخيص (مزمن):</label>
           <div class="display-value" data-field="chronicDiagnosis">${prescription.chronicDiagnosis || 'غير محدد'}</div>
         </div>
       </div>

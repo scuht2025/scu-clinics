@@ -49,6 +49,15 @@ export class PrescriptionForm {
     await ChronicDiagnosisAutocomplete.attachToInputById('chronicDiagnosis');
     await this.populateFormIfEditing();
     this.preferences.restoreSelections();
+    // Show/hide old print button based on hospital config
+    try {
+      const cfg = await apiService.getHospitalConfig();
+      const showOld = Number(cfg?.showOldTemplate ?? 0) !== 0;
+      const oldBtn = document.getElementById('printOldStyleBtn') as HTMLButtonElement | null;
+      if (oldBtn) {
+        oldBtn.style.display = showOld ? '' : 'none';
+      }
+    } catch {}
     // Apply hospital header text dynamically
     void this.printManager.applyHospitalHeader();
     this.syncDiagnosisFieldsAvailability();

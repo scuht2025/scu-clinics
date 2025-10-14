@@ -126,6 +126,7 @@ export interface HospitalConfig {
   address?: string;
   phone?: string;
   logo?: string | null; // data URL for logo image
+  showOldTemplate?: number;
 }
 
 export function initializeDatabase(): Database.Database {
@@ -315,7 +316,8 @@ function createTables() {
       name TEXT,
       address TEXT,
       phone TEXT,
-      logo TEXT
+      logo TEXT,
+      showOldTemplate INTEGER DEFAULT 0
     )
   `);
   migrateHospitalConfigTable();
@@ -865,10 +867,10 @@ export const diagnosesService = {
 // Hospital configuration service (single row)
 export const hospitalConfigService = {
   get: (): HospitalConfig => {
-    const stmt = db.prepare('SELECT id, name, address, phone, logo FROM hospital_config WHERE id = 1');
+    const stmt = db.prepare('SELECT id, name, address, phone, logo, showOldTemplate FROM hospital_config WHERE id = 1');
     const row = stmt.get() as HospitalConfig | undefined;
     // Provide sensible defaults if not configured
-    return row ?? { id: 1, name: 'مستشفى جامعة قناة السويس التخصصي', address: '', phone: '', logo: null };
+    return row ?? { id: 1, name: 'مستشفى جامعة قناة السويس التخصصي', address: '', phone: '', logo: null, showOldTemplate: 0 };
   },
   save: (data: Partial<HospitalConfig>) => {
     const existing = db.prepare('SELECT id FROM hospital_config WHERE id = 1').get() as { id: number } | undefined;
@@ -880,8 +882,8 @@ export const hospitalConfigService = {
       const stmt = db.prepare(`UPDATE hospital_config SET ${setClause} WHERE id = 1`);
       return stmt.run(...values);
     } else {
-      const stmt = db.prepare('INSERT INTO hospital_config (id, name, address, phone, logo) VALUES (1, ?, ?, ?, ?)');
-      return stmt.run(data.name ?? null, data.address ?? null, data.phone ?? null, data.logo ?? null);
+      const stmt = db.prepare('INSERT INTO hospital_config (id, name, address, phone, logo, showOldTemplate) VALUES (1, ?, ?, ?, ?, ?)');
+      return stmt.run(data.name ?? null, data.address ?? null, data.phone ?? null, data.logo ?? null, data.showOldTemplate ?? 1);
     }
   }
 };
@@ -930,6 +932,18 @@ function migrateHospitalConfigTable() {
         console.warn('Failed to add logo column to hospital_config:', err);
       }
     }
+    const hasShowOld = existingColumns.some(col => col.name === 'showOldTemplate');
+    if (!hasShowOld) {
+      try {
+        db.exec(`ALTER TABLE hospital_config ADD COLUMN showOldTemplate INTEGER DEFAULT 0`);
+      } catch (err) {
+        console.warn('Failed to add showOldTemplate column to hospital_config:', err);
+      }
+    }
+    // Normalize nulls to 0 for safety
+    try {
+      db.exec(`UPDATE hospital_config SET showOldTemplate = COALESCE(showOldTemplate, 0) WHERE id = 1`);
+    } catch {}
   } catch (error) {
     console.warn('Failed to migrate hospital_config table:', error);
   }

@@ -109,6 +109,7 @@ export class AdminInterface {
     const name = (cfg?.name ?? '').toString();
     const address = (cfg?.address ?? '').toString();
     const phone = (cfg?.phone ?? '').toString();
+    const showOld = Number(cfg?.showOldTemplate ?? 0) !== 0;
 
     return `
       <div class="admin-section">
@@ -140,6 +141,15 @@ export class AdminInterface {
           <p class="help-text">سيتم حفظ الشعار داخل قاعدة البيانات واستخدامه في رأس الطباعة.</p>
         </div>
 
+        <div class="form-group">
+          <label>عرض زر "طباعة شكل قديم"</label>
+          <div class="checkbox-option">
+            <input type="checkbox" id="showOldTemplate" ${showOld ? 'checked' : ''}>
+            <label for="showOldTemplate">إظهار زر طباعة الشكل القديم في نموذج الروشتة</label>
+          </div>
+          <p class="help-text">قم بإلغاء التحديد لإخفاء خيار طباعة الشكل القديم من نموذج الروشتة.</p>
+        </div>
+
         <div class="form-actions">
           <button class="btn btn-primary" id="saveHospitalConfigBtn">حفظ</button>
         </div>
@@ -155,6 +165,8 @@ export class AdminInterface {
       const phone = (document.getElementById('hospitalPhone') as HTMLInputElement)?.value?.trim() || '';
       const logoPreview = document.getElementById('hospitalLogoPreview') as HTMLImageElement | null;
       const logo = logoPreview?.src && logoPreview.style.display !== 'none' ? logoPreview.src : null;
+      const showOldEl = document.getElementById('showOldTemplate') as HTMLInputElement | null;
+      const showOldTemplate = showOldEl?.checked ? 1 : 0;
 
       if (!name) {
         void Dialog.alert('يرجى إدخال اسم المستشفى');
@@ -162,7 +174,7 @@ export class AdminInterface {
       }
 
       try {
-        await apiService.saveHospitalConfig({ name, address, phone, logo });
+        await apiService.saveHospitalConfig({ name, address, phone, logo, showOldTemplate });
         await Dialog.alert('تم حفظ بيانات المستشفى');
       } catch (error) {
         console.error('Error saving hospital config:', error);

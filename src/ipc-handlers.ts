@@ -681,11 +681,13 @@ export function setupIpcHandlers(): void {
 
   ipcMain.handle('save-hospital-config', async (_event, data) => {
     try {
+      const showOldTemplate = Number(data?.showOldTemplate) === 0 ? 0 : 1;
       return hospitalConfigService.save({
         name: Validator.sanitizeString(data?.name || ''),
         address: Validator.sanitizeString(data?.address || ''),
         phone: Validator.sanitizeString(data?.phone || ''),
-        logo: typeof data?.logo === 'string' && data.logo.startsWith('data:image/') ? data.logo : null
+        logo: typeof data?.logo === 'string' && data.logo.startsWith('data:image/') ? data.logo : null,
+        showOldTemplate
       });
     } catch (error) {
       logger.error('Error saving hospital config:', error);

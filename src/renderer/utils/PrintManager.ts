@@ -61,6 +61,18 @@ export class PrintManager {
       setText('printDiagnoses', prescriptionData.diagnoses || '');
       setText('printChronicDiagnosis', prescriptionData.chronicDiagnosis || '');
 
+      // Hide diagnosis rows if empty
+      const diagEl = document.getElementById('printDiagnoses');
+      const chronicEl = document.getElementById('printChronicDiagnosis');
+      const hideRowIfEmpty = (el: HTMLElement | null) => {
+        if (!el) return;
+        const row = el.closest('tr') as HTMLElement | null;
+        const text = (el.textContent || '').trim();
+        if (row) row.style.display = text ? '' : 'none';
+      };
+      hideRowIfEmpty(diagEl);
+      hideRowIfEmpty(chronicEl);
+
       // Build medications print table
       const table = document.getElementById('printMedicationsTable') as HTMLTableElement | null;
       if (table) {
@@ -157,14 +169,20 @@ export class PrintManager {
    * Get prescription data from form elements (for PrescriptionForm)
    */
   public getPrescriptionDataFromForm(): any {
+    const diEl = document.getElementById('diagnoses') as HTMLInputElement | null;
+    const chEl = document.getElementById('chronicDiagnosis') as HTMLInputElement | null;
+    const rawDx = diEl?.value || '';
+    const rawCh = chEl?.value || '';
+    const diagnoses = diEl?.disabled ? '' : rawDx;
+    const chronicDiagnosis = chEl?.disabled ? '' : rawCh;
     return {
       patientName: (document.getElementById('patientName') as HTMLInputElement)?.value || '',
       patientId: (document.getElementById('patientId') as HTMLInputElement)?.value || '',
       age: (document.getElementById('age') as HTMLInputElement)?.value || '',
       socialNumber: (document.getElementById('socialNumber') as HTMLInputElement)?.value || '',
       gender: (document.getElementById('gender') as HTMLSelectElement)?.value || '',
-      diagnoses: (document.getElementById('diagnoses') as HTMLInputElement)?.value || '',
-      chronicDiagnosis: (document.getElementById('chronicDiagnosis') as HTMLInputElement)?.value || '',
+      diagnoses,
+      chronicDiagnosis,
       doctorName: (document.getElementById('doctorName') as HTMLSelectElement)?.value || '',
       doctorDegree: (document.getElementById('doctorDegree') as HTMLSelectElement)?.value || '',
       consultation: (document.getElementById('consultation') as HTMLSelectElement)?.value || '',
@@ -342,10 +360,15 @@ export class PrintManager {
 
       const medications = JSON.parse(baseData.medications || '[]');
 
+      // prefer chronic if present, otherwise diagnoses
+      const diagnosisForOld = (baseData.chronicDiagnosis && String(baseData.chronicDiagnosis).trim())
+        ? baseData.chronicDiagnosis
+        : (baseData.diagnoses || '');
+
       const payload: OldPrintPrescriptionData = {
         patientName: baseData.patientName || '',
         patientId: baseData.patientId || '',
-        diagnoses: baseData.diagnoses || '',
+        diagnoses: diagnosisForOld,
         doctorName: baseData.doctorName || '',
         doctorDegree: baseData.doctorDegree || '',
         consultation: baseData.consultation || '',
@@ -355,7 +378,6 @@ export class PrintManager {
         selectedPharmacies,
         allPharmacies
       };
-
       this.injectAndPrintOldTemplate(payload);
       await this.orchestratePrint();
     } catch (error) {

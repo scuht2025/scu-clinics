@@ -51,6 +51,7 @@ export class PrescriptionForm {
     this.preferences.restoreSelections();
     // Apply hospital header text dynamically
     void this.printManager.applyHospitalHeader();
+    this.syncDiagnosisFieldsAvailability();
     
     // Ensure focus is set on the first input after initialization
     setTimeout(() => {
@@ -79,7 +80,7 @@ export class PrescriptionForm {
 
     // Print old style
     const printOldBtn = document.getElementById('printOldStyleBtn');
-    printOldBtn?.addEventListener('click', () => { void this.printManager.printOldStyleFromForm(); });
+    printOldBtn?.addEventListener('click', () => { void this.printOldStylePrescription(); });
 
     // New prescription
     const newBtn = document.getElementById('newPrescriptionBtn');
@@ -94,21 +95,49 @@ export class PrescriptionForm {
     doctorDegreeSelect?.addEventListener('change', () => this.preferences.persistSelections());
     clinicSelect?.addEventListener('change', () => this.preferences.persistSelections());
 
-    // // Show prescriptions list
-    // const listBtn = document.getElementById('showPrescriptionsListBtn');
-    // listBtn?.addEventListener('click', () => this.showPrescriptionsList());
+    const diagnosesInput = document.getElementById('diagnoses') as HTMLInputElement;
+    const chronicInput = document.getElementById('chronicDiagnosis') as HTMLInputElement;
+    diagnosesInput?.addEventListener('input', () => this.syncDiagnosisFieldsAvailability());
+    chronicInput?.addEventListener('input', () => this.syncDiagnosisFieldsAvailability());
+  }
+
+  private syncDiagnosisFieldsAvailability(): void {
+    const diagnosesInput = document.getElementById('diagnoses') as HTMLInputElement | null;
+    const chronicInput = document.getElementById('chronicDiagnosis') as HTMLInputElement | null;
+    if (!diagnosesInput || !chronicInput) return;
+    const hasDx = (diagnosesInput.value || '').trim().length > 0;
+    const hasChronic = (chronicInput.value || '').trim().length > 0;
+    // If both have values, prefer chronic and disable diagnoses
+    if (hasChronic) {
+      diagnosesInput.disabled = true;
+      chronicInput.disabled = false;
+      return;
+    }
+    // If only diagnoses has value, disable chronic
+    if (hasDx) {
+      chronicInput.disabled = true;
+      diagnosesInput.disabled = false;
+      return;
+    }
+    // Otherwise enable both
+    diagnosesInput.disabled = false;
+    chronicInput.disabled = false;
   }
 
   private setCurrentDateTime(): void {
     const now = new Date();
-    const dateInput = document.getElementById('prescriptionDate') as HTMLInputElement;
-    const timeInput = document.getElementById('prescriptionTime') as HTMLInputElement;
-
+    const dateInput = document.getElementById('prescriptionDate') as HTMLInputElement | null;
+    const timeInput = document.getElementById('prescriptionTime') as HTMLInputElement | null;
     if (dateInput) {
-      dateInput.value = now.toISOString().split('T')[0];
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
     }
     if (timeInput) {
-      timeInput.value = now.toTimeString().split(' ')[0].substring(0, 5);
+      const hh = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      timeInput.value = `${hh}:${min}`;
     }
   }
 
@@ -177,6 +206,12 @@ export class PrescriptionForm {
       await Dialog.alert('يرجى ملء جميع البيانات المطلوبة');
       return false;
     }
+    const hasDx = (data.diagnoses || '').trim().length > 0;
+    const hasChronic = (data.chronicDiagnosis || '').trim().length > 0;
+    if (!hasDx && !hasChronic) {
+      await Dialog.alert('يرجى إدخال التشخيص (مزمن أو غير مزمن)');
+      return false;
+    }
     return true;
   }
 
@@ -235,15 +270,33 @@ export class PrescriptionForm {
 
     this.preferences.restoreSelections();
     this.setCurrentDateTime();
+    this.syncDiagnosisFieldsAvailability();
   }
 
   private async printPrescription(): Promise<void> {
     try {
+      const baseData = this.getFormData();
+      if (!(await this.validateForm(baseData))) {
+        return;
+      }
       // Ensure header is applied
       await this.printManager.applyHospitalHeader();
       await this.printManager.printFromForm();
     } catch (error) {
       console.error('Error printing prescription:', error);
+    }
+  }
+
+  private async printOldStylePrescription(): Promise<void> {
+    try {
+      const baseData = this.getFormData();
+      if (!(await this.validateForm(baseData))) {
+        return;
+      }
+      await this.printManager.applyHospitalHeader();
+      await this.printManager.printOldStyleFromForm();
+    } catch (error) {
+      console.error('Error printing old style prescription:', error);
     }
   }
 
@@ -317,6 +370,7 @@ export class PrescriptionForm {
         console.error('Error populating form with prescription data:', error);
       }
     }
+    this.syncDiagnosisFieldsAvailability();
   }
 
   private populatePharmacies(pharmacies: string[]): void {

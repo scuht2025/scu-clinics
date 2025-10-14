@@ -1,7 +1,7 @@
 {
   "name": "scu-clinics",
   "productName": "scu-clinics",
-  "version": "1.12.2",
+  "version": "1.12.3",
   "description": "Clinics Manger",
   "main": ".vite/build/main.js",
   "scripts": {

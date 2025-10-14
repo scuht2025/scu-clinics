@@ -152,8 +152,9 @@ export class PrescriptionForm {
       // Ensure medications include genericName
       const catalog = await apiService.getMedications();
       const meds = this.medicationTable.collectMedicationData();
-      this.medicationTable.persistTemplate(meds);
-      const enrichedMeds = this.enrichMedicationsWithGenericNames(meds, catalog);
+      const cleanedMeds = this.filterMedications(meds);
+      this.medicationTable.persistTemplate(cleanedMeds);
+      const enrichedMeds = this.enrichMedicationsWithGenericNames(cleanedMeds, catalog);
 
       const prescriptionData = {
         ...baseData,
@@ -237,6 +238,17 @@ export class PrescriptionForm {
   private getSelectedPharmacies(): string[] {
     const checkboxes = document.querySelectorAll('input[name="pharmacy"]:checked');
     return Array.from(checkboxes).map(cb => (cb as HTMLInputElement).value);
+  }
+
+  private filterMedications(medications: any[]): any[] {
+    if (!Array.isArray(medications)) return [];
+    const fields = ['drug','prescribingLevel','preAuthorizationProtocol','route','dose','frequency','precautions','duration'];
+    const hasText = (v: any) => typeof v === 'string' ? v.trim().length > 0 : (v != null && String(v).trim().length > 0);
+    return medications.filter(m => {
+      const anyField = fields.some(f => hasText((m as any)[f]));
+      const hasDrug = hasText((m as any).drug);
+      return anyField && hasDrug;
+    });
   }
 
   private async clearForm(): Promise<void> {

@@ -284,7 +284,9 @@ export class PrintManager {
       }
     });
 
-    return medications;
+    // Filter out empty rows: require at least a non-empty drug name
+    const filtered = medications.filter(m => (m.drug || '').trim().length > 0);
+    return filtered;
   }
   private getSelectedPharmaciesFromForm(): string[] {
     const checkboxes = document.querySelectorAll('input[name="pharmacy"]:checked');

@@ -36,8 +36,16 @@ export class ReportsEditor {
     this.stateManager = stateManager;
   }
 
+  private getLocalISODate(): string {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
   async render(): Promise<string> {
-    const today = new Date().toISOString().split('T')[0];
+    const today = this.getLocalISODate();
     const now = new Date();
     const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
     
@@ -338,7 +346,7 @@ export class ReportsEditor {
   private setCurrentDate(): void {
     const dateInput = document.getElementById('reportDate') as HTMLInputElement;
     if (dateInput) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = this.getLocalISODate();
       dateInput.value = today;
     }
   }
@@ -638,15 +646,7 @@ export class ReportsEditor {
       
       const consultationSelect = document.getElementById('consultation') as HTMLSelectElement;
       if (consultationSelect) consultationSelect.value = data.consultation || '';
-      
-      // Only set date if draft has one, otherwise keep the default current date
-      if (data.reportDate) {
-        (document.getElementById('reportDate') as HTMLInputElement).value = data.reportDate;
-      }
-      
-      if (data.reportTime) {
-        (document.getElementById('reportTime') as HTMLInputElement).value = data.reportTime;
-      }
+      // Intentionally do not override date/time from draft; keep current date/time
       
       if (this.quill) (this.quill as any).root.innerHTML = data.content || '';
       this.updateWordCount();

@@ -1,4 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Search highlighting styles */
+.search-highlight {
+  background-color: #fef3c7;
+  color: #92400e;
+  padding: 1px 0px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+.med-suggest-trade {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
 
 
 
@@ -280,7 +296,7 @@ body {
 }
 
 .form-group.half {
-  /* No longer needed with grid layout */
+  /* No longer needed with grid layout - kept for backwards compatibility */
 }
 
 .form-group label {
@@ -1750,16 +1766,30 @@ span.ql-size.ql-picker svg {
   .report-print-container {
     display: block !important;
   }
+
   .report-print-container .page {
     padding: 16px !important;
     justify-content: space-between !important;
     gap: 16px !important;
-    border-bottom: 2px solid #000 !important;
-    padding: 10px 0 !important;
-    margin-bottom: 14px !important;
   }
-  .report-print-container .patient-block { width: 48% !important; }
-  .report-print-container .patient-row { margin: 4px 0 !important; font-size: 12px !important; }
-  .report-print-container .label { font-weight: 700 !important; margin-left: 6px !important; }
-  .report-print-container .content { margin-top: 8px !important; line-height: 1.6 !important; font-size: 13px !important; }
+
+  .report-print-container .patient-block {
+    width: 48% !important;
+  }
+
+  .report-print-container .patient-row {
+    margin: 4px 0 !important;
+    font-size: 12px !important;
+  }
+
+  .report-print-container .label {
+    font-weight: 700 !important;
+    margin-left: 6px !important;
+  }
+
+  .report-print-container .content {
+    margin-top: 8px !important;
+    line-height: 1.6 !important;
+    font-size: 13px !important;
+  }
 }

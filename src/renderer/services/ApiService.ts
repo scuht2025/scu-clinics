@@ -89,6 +89,10 @@ export class ApiService {
     return this.getCachedData('medications', () => this.callApi('getMedications'));
   }
 
+  async searchMedications(searchTerm: string): Promise<any[]> {
+    return this.callApi('searchMedications', searchTerm);
+  }
+
   async getPharmacies(): Promise<any[]> {
     return this.getCachedData('pharmacies', () => this.callApi('getPharmacies'));
   }

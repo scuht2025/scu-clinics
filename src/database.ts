@@ -831,7 +831,20 @@ export const medicationLevelsService = createCRUDService<MedicationLevel>('medic
 export const administrationRoutesService = createCRUDService<AdministrationRoute>('administration_routes', 'routeName');
 export const frequenciesService = createCRUDService<Frequency>('frequencies', 'frequencyName');
 export const durationsService = createCRUDService<Duration>('durations', 'durationName');
-export const medicationsService = createCRUDService<Medication>('medications', 'name');
+export const medicationsService = {
+  ...createCRUDService<Medication>('medications', 'name'),
+
+  search: (searchTerm: string): Medication[] => {
+    const stmt = db.prepare(`
+      SELECT * FROM medications
+      WHERE name LIKE ? OR genericName LIKE ?
+      ORDER BY name
+      LIMIT 20
+    `);
+    const term = `%${searchTerm}%`;
+    return stmt.all(term, term) as Medication[];
+  }
+};
 export const pharmaciesService = createCRUDService<Pharmacy>('pharmacies', 'name');
 export const procedureCodesService = {
   ...createCRUDService<ProcedureCode>('procedure_codes', 'ar_name'),

@@ -240,7 +240,7 @@ export class MedicationTableManager {
       const options: Fuse.IFuseOptions<any> = {
         includeScore: true,
         shouldSort: true,
-        threshold: 0.3,
+        threshold: 0.4, // More lenient for better fuzzy matching
         ignoreLocation: true,
         minMatchCharLength: 1,
         keys: [
@@ -287,11 +287,47 @@ export class MedicationTableManager {
     };
 
     const esc = (s: string) => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    const render = (items: any[]) => {
+
+    // Enhanced highlighting function that highlights matching characters
+    const highlightMatches = (text: string, searchTerm: string): string => {
+      if (!searchTerm || !text) return esc(text);
+
+      const searchLower = searchTerm.toLowerCase();
+      const textLower = text.toLowerCase();
+
+      // Find all character matches regardless of order
+      let highlighted = '';
+      let lastIndex = 0;
+
+      // For each character in the search term, find matches in the text
+      for (let i = 0; i < searchTerm.length; i++) {
+        const char = searchLower[i];
+        const charIndex = textLower.indexOf(char, lastIndex);
+
+        if (charIndex !== -1) {
+          // Add non-matching part
+          if (charIndex > lastIndex) {
+            highlighted += esc(text.substring(lastIndex, charIndex));
+          }
+          // Add highlighted matching character
+          highlighted += `<mark class="search-highlight">${esc(text.substring(charIndex, charIndex + 1))}</mark>`;
+          lastIndex = charIndex + 1;
+        }
+      }
+
+      // Add remaining text
+      if (lastIndex < text.length) {
+        highlighted += esc(text.substring(lastIndex));
+      }
+
+      return highlighted || esc(text);
+    };
+
+    const render = (items: any[], searchTerm: string) => {
       box.innerHTML = '';
       items.forEach((item, idx) => {
         const el = document.createElement('div');
-        
+
         el.style.fontSize = '16px';
         el.style.padding = '6px 8px';
         el.style.cursor = 'pointer';
@@ -310,11 +346,16 @@ export class MedicationTableManager {
         // Show Generic (Trade) and highlight trade with a soft teal chip
         const generic = (item.genericName || '').trim();
         const trade = (item.name || '').trim();
+
         if (generic && trade && generic.toLowerCase() !== trade.toLowerCase()) {
-          el.innerHTML = `${esc(generic)} <span class="med-suggest-trade">(${esc(trade)})</span>`;
+          const highlightedGeneric = highlightMatches(generic, searchTerm);
+          const highlightedTrade = highlightMatches(trade, searchTerm);
+          el.innerHTML = `${highlightedGeneric} <span class="med-suggest-trade">(${highlightedTrade})</span>`;
         } else {
-          el.textContent = generic || trade;
+          const displayText = generic || trade;
+          el.innerHTML = highlightMatches(displayText, searchTerm);
         }
+
         el.addEventListener('mousedown', e => {
           e.preventDefault();
           select(idx);
@@ -329,13 +370,13 @@ export class MedicationTableManager {
       const q = input.value.trim();
       if (!q) {
         suggestions = [];
-        render(suggestions);
+        render(suggestions, q);
         return;
       }
       const results = this.medsFuse!.search(q, { limit: 20});
       suggestions = results.map(r => r.item);
       currentIndex = -1;
-      render(suggestions);
+      render(suggestions, q);
     };
 
     let debounce: number | undefined;
